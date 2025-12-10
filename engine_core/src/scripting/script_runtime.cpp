@@ -661,7 +661,7 @@ void ScriptRuntime::updateTransition(f64 deltaTime)
     }
 }
 
-void ScriptRuntime::updateAnimation(f64 deltaTime)
+void ScriptRuntime::updateAnimation(f64 /*deltaTime*/)
 {
     if (m_animationManager)
     {
@@ -707,7 +707,7 @@ Scene::CharacterPosition ScriptRuntime::parsePosition(i32 posCode)
     }
 }
 
-std::unique_ptr<Scene::ITransition> ScriptRuntime::createTransition(const std::string& type, f32 duration)
+std::unique_ptr<Scene::ITransition> ScriptRuntime::createTransition(const std::string& type, f32 /*duration*/)
 {
     std::unique_ptr<Scene::ITransition> transition;
 

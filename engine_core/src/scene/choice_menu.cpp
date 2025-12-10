@@ -101,7 +101,8 @@ void ChoiceMenu::setHighlightedIndex(i32 index)
         return;
     }
 
-    if (m_options[index].enabled && m_options[index].visible)
+    size_t idx = static_cast<size_t>(index);
+    if (m_options[idx].enabled && m_options[idx].visible)
     {
         m_highlightedIndex = index;
     }
@@ -134,7 +135,8 @@ bool ChoiceMenu::selectOption(i32 index)
         return false;
     }
 
-    if (!m_options[index].enabled || !m_options[index].visible)
+    size_t idx = static_cast<size_t>(index);
+    if (!m_options[idx].enabled || !m_options[idx].visible)
     {
         return false;
     }
@@ -316,8 +318,8 @@ f32 ChoiceMenu::calculateMenuHeight() const
 
     if (visibleCount > 0)
     {
-        height += visibleCount * m_style.optionHeight;
-        height += (visibleCount - 1) * m_style.optionSpacing;
+        height += static_cast<f32>(visibleCount) * m_style.optionHeight;
+        height += static_cast<f32>(visibleCount - 1) * m_style.optionSpacing;
     }
 
     return height;
@@ -395,7 +397,8 @@ i32 ChoiceMenu::getNextEnabledIndex(i32 current, i32 direction) const
             index = 0;
         }
 
-        if (m_options[index].enabled && m_options[index].visible)
+        size_t idx = static_cast<size_t>(index);
+        if (m_options[idx].enabled && m_options[idx].visible)
         {
             return index;
         }
