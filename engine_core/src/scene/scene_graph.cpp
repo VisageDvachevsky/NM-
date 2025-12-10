@@ -629,7 +629,7 @@ void ChoiceUIObject::selectNext()
     do
     {
         m_selectedIndex = (m_selectedIndex + 1) % static_cast<i32>(m_choices.size());
-    } while (!m_choices[m_selectedIndex].enabled && m_selectedIndex != start);
+    } while (!m_choices[static_cast<size_t>(m_selectedIndex)].enabled && m_selectedIndex != start);
 }
 
 void ChoiceUIObject::selectPrevious()
@@ -643,14 +643,14 @@ void ChoiceUIObject::selectPrevious()
     do
     {
         m_selectedIndex = (m_selectedIndex - 1 + static_cast<i32>(m_choices.size())) % static_cast<i32>(m_choices.size());
-    } while (!m_choices[m_selectedIndex].enabled && m_selectedIndex != start);
+    } while (!m_choices[static_cast<size_t>(m_selectedIndex)].enabled && m_selectedIndex != start);
 }
 
 bool ChoiceUIObject::confirm()
 {
     if (m_selectedIndex >= 0 && m_selectedIndex < static_cast<i32>(m_choices.size()))
     {
-        const auto& choice = m_choices[m_selectedIndex];
+        const auto& choice = m_choices[static_cast<size_t>(m_selectedIndex)];
         if (choice.enabled && m_onSelect)
         {
             m_onSelect(m_selectedIndex, choice.id);

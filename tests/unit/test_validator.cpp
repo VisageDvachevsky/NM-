@@ -6,7 +6,7 @@
 using namespace NovelMind::scripting;
 
 // Helper to create a simple program for testing
-static Program createTestProgram()
+[[maybe_unused]] static Program createTestProgram()
 {
     Program program;
 

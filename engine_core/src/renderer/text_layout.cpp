@@ -228,7 +228,7 @@ Color RichTextParser::parseColor(const std::string& colorStr) const
     {
         try
         {
-            u32 hex = std::stoul(s.substr(0, 6), nullptr, 16);
+            u32 hex = static_cast<u32>(std::stoul(s.substr(0, 6), nullptr, 16));
             u8 r = (hex >> 16) & 0xFF;
             u8 g = (hex >> 8) & 0xFF;
             u8 b = hex & 0xFF;
@@ -237,7 +237,7 @@ Color RichTextParser::parseColor(const std::string& colorStr) const
             // Check for alpha
             if (s.length() >= 8)
             {
-                a = std::stoul(s.substr(6, 2), nullptr, 16);
+                a = static_cast<u8>(std::stoul(s.substr(6, 2), nullptr, 16));
             }
 
             return Color(r, g, b, a);
@@ -253,9 +253,9 @@ Color RichTextParser::parseColor(const std::string& colorStr) const
     {
         try
         {
-            u8 r = std::stoul(s.substr(0, 1), nullptr, 16) * 17;
-            u8 g = std::stoul(s.substr(1, 1), nullptr, 16) * 17;
-            u8 b = std::stoul(s.substr(2, 1), nullptr, 16) * 17;
+            u8 r = static_cast<u8>(std::stoul(s.substr(0, 1), nullptr, 16) * 17);
+            u8 g = static_cast<u8>(std::stoul(s.substr(1, 1), nullptr, 16) * 17);
+            u8 b = static_cast<u8>(std::stoul(s.substr(2, 1), nullptr, 16) * 17);
             return Color(r, g, b, 255);
         }
         catch (...)

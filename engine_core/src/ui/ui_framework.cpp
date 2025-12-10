@@ -728,12 +728,12 @@ void Grid::layoutChildren()
     f32 availableWidth = m_bounds.width - m_style.padding.left - m_style.padding.right;
     f32 availableHeight = m_bounds.height - m_style.padding.top - m_style.padding.bottom;
 
-    f32 cellWidth = (availableWidth - m_columnSpacing * (m_columns - 1)) / m_columns;
+    f32 cellWidth = (availableWidth - m_columnSpacing * static_cast<f32>(m_columns - 1)) / static_cast<f32>(m_columns);
 
     // Calculate row heights
     std::vector<f32> rowHeights;
-    size_t visibleCount = std::count_if(m_children.begin(), m_children.end(),
-        [](const auto& c) { return c->isVisible(); });
+    size_t visibleCount = static_cast<size_t>(std::count_if(m_children.begin(), m_children.end(),
+        [](const auto& c) { return c->isVisible(); }));
     i32 rows = (static_cast<i32>(visibleCount) + m_columns - 1) / m_columns;
 
     for (i32 row = 0; row < rows; ++row)
@@ -741,7 +741,7 @@ void Grid::layoutChildren()
         f32 maxHeight = 0.0f;
         for (i32 col = 0; col < m_columns; ++col)
         {
-            size_t idx = row * m_columns + col;
+            size_t idx = static_cast<size_t>(row * m_columns + col);
             if (idx >= m_children.size() || !m_children[idx]->isVisible())
             {
                 continue;
@@ -774,14 +774,14 @@ void Grid::layoutChildren()
                 break;
             }
 
-            m_children[idx]->setBounds({x, y, cellWidth, rowHeights[row]});
+            m_children[idx]->setBounds({x, y, cellWidth, rowHeights[static_cast<size_t>(row)]});
             m_children[idx]->layout();
 
             x += cellWidth + m_columnSpacing;
             ++idx;
         }
 
-        y += rowHeights[row] + m_rowSpacing;
+        y += rowHeights[static_cast<size_t>(row)] + m_rowSpacing;
     }
 }
 
@@ -822,7 +822,7 @@ Rect Label::measure(f32 /*availableWidth*/, f32 /*availableHeight*/)
 {
     // Simplified text measurement
     f32 charWidth = m_style.fontSize * 0.6f;
-    f32 width = m_text.length() * charWidth + m_style.padding.left + m_style.padding.right;
+    f32 width = static_cast<f32>(m_text.length()) * charWidth + m_style.padding.left + m_style.padding.right;
     f32 height = m_style.fontSize + m_style.padding.top + m_style.padding.bottom;
 
     return {0, 0, width, height};
@@ -857,7 +857,7 @@ void Button::render(renderer::IRenderer& renderer)
 
     // Center text in button
     f32 charWidth = m_style.fontSize * 0.6f;
-    f32 textWidth = m_text.length() * charWidth;
+    f32 textWidth = static_cast<f32>(m_text.length()) * charWidth;
     f32 textHeight = m_style.fontSize;
 
     f32 textX = m_bounds.x + (m_bounds.width - textWidth) / 2.0f;
@@ -887,7 +887,7 @@ bool Button::handleEvent(UIEvent& event)
 Rect Button::measure(f32 /*availableWidth*/, f32 /*availableHeight*/)
 {
     f32 charWidth = m_style.fontSize * 0.6f;
-    f32 width = m_text.length() * charWidth + m_style.padding.left + m_style.padding.right;
+    f32 width = static_cast<f32>(m_text.length()) * charWidth + m_style.padding.left + m_style.padding.right;
     f32 height = m_style.fontSize + m_style.padding.top + m_style.padding.bottom;
 
     width = std::max(width, m_constraints.minWidth);
@@ -1149,7 +1149,7 @@ Rect Checkbox::measure(f32 /*availableWidth*/, f32 /*availableHeight*/)
 {
     f32 boxSize = m_style.fontSize;
     f32 charWidth = m_style.fontSize * 0.6f;
-    f32 labelWidth = m_label.length() * charWidth;
+    f32 labelWidth = static_cast<f32>(m_label.length()) * charWidth;
 
     f32 width = boxSize + 8.0f + labelWidth + m_style.padding.left + m_style.padding.right;
     f32 height = std::max(boxSize, m_style.fontSize) + m_style.padding.top + m_style.padding.bottom;

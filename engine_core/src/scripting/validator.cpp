@@ -354,7 +354,7 @@ void Validator::validateSayStmt(const SayStmt& stmt)
     }
 }
 
-void Validator::validateChoiceStmt(const ChoiceStmt& stmt, bool& reachable)
+void Validator::validateChoiceStmt(const ChoiceStmt& stmt, bool& /*reachable*/)
 {
     if (stmt.options.empty())
     {
