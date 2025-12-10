@@ -42,5 +42,29 @@ catch_discover_tests(unit_tests
         TIMEOUT 60  # 60 seconds max per test
 )
 
-# Note: Integration tests for editor components are defined here but may require
-# additional work as the editor APIs stabilize. For now, focus on unit tests.
+# Integration tests (requires editor)
+if(NOVELMIND_BUILD_EDITOR)
+    add_executable(integration_tests
+        integration/test_editor_runtime.cpp
+        integration/test_editor_settings.cpp
+        integration/test_gui_panels.cpp
+    )
+
+    target_link_libraries(integration_tests
+        PRIVATE
+            engine_core
+            novelmind_editor
+            Catch2::Catch2WithMain
+            novelmind_compiler_options
+    )
+
+    target_include_directories(integration_tests
+        PRIVATE
+            ${CMAKE_SOURCE_DIR}/editor/include
+    )
+
+    catch_discover_tests(integration_tests
+        PROPERTIES
+            TIMEOUT 60
+    )
+endif()
