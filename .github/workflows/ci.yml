@@ -16,11 +16,11 @@ jobs:
         build_type: [Debug, Release]
         include:
           - compiler: gcc
-            cc: gcc-11
-            cxx: g++-11
+            cc: gcc
+            cxx: g++
           - compiler: clang
-            cc: clang-14
-            cxx: clang++-14
+            cc: clang
+            cxx: clang++
 
     steps:
     - uses: actions/checkout@v4
