@@ -441,4 +441,203 @@ private:
     std::unique_ptr<ASTToTextGenerator> m_textGen;
 };
 
+/**
+ * @brief Graph difference types for diffing API
+ */
+enum class GraphDiffType : u8
+{
+    NodeAdded,
+    NodeRemoved,
+    NodeModified,
+    EdgeAdded,
+    EdgeRemoved,
+    PropertyChanged,
+    PositionChanged
+};
+
+/**
+ * @brief Single difference entry in a graph diff
+ */
+struct GraphDiffEntry
+{
+    GraphDiffType type;
+    NodeId nodeId = 0;          // For node changes
+    std::string propertyName;    // For property changes
+    std::string oldValue;        // Previous value
+    std::string newValue;        // New value
+    VisualGraphEdge edge;        // For edge changes
+};
+
+/**
+ * @brief Result of diffing two graphs
+ */
+struct GraphDiff
+{
+    std::vector<GraphDiffEntry> entries;
+    bool hasStructuralChanges = false;  // Node/edge additions or removals
+    bool hasPropertyChanges = false;    // Only property values changed
+    bool hasPositionChanges = false;    // Only visual positions changed
+
+    [[nodiscard]] bool isEmpty() const { return entries.empty(); }
+    [[nodiscard]] size_t size() const { return entries.size(); }
+};
+
+/**
+ * @brief Graph Differ - computes differences between two visual graphs
+ *
+ * Used for:
+ * - Undo/Redo operations (compute minimal diff)
+ * - Collaborative editing (merge changes)
+ * - Change tracking (history display)
+ */
+class GraphDiffer
+{
+public:
+    GraphDiffer() = default;
+    ~GraphDiffer() = default;
+
+    /**
+     * @brief Compute diff between two graphs
+     * @param oldGraph The original graph (before changes)
+     * @param newGraph The modified graph (after changes)
+     * @return GraphDiff containing all differences
+     */
+    [[nodiscard]] GraphDiff diff(const VisualGraph& oldGraph, const VisualGraph& newGraph) const;
+
+    /**
+     * @brief Apply a diff to a graph
+     * @param graph The graph to modify
+     * @param diff The diff to apply
+     * @return Result indicating success or failure
+     */
+    Result<void> applyDiff(VisualGraph& graph, const GraphDiff& diff) const;
+
+    /**
+     * @brief Invert a diff (for undo operations)
+     * @param diff The diff to invert
+     * @return Inverted diff
+     */
+    [[nodiscard]] GraphDiff invertDiff(const GraphDiff& diff) const;
+
+    /**
+     * @brief Merge two diffs (for collaborative editing)
+     * @param diff1 First diff
+     * @param diff2 Second diff
+     * @return Merged diff or error if conflicts exist
+     */
+    [[nodiscard]] Result<GraphDiff> mergeDiffs(const GraphDiff& diff1, const GraphDiff& diff2) const;
+
+    /**
+     * @brief Check if two diffs conflict
+     */
+    [[nodiscard]] bool hasConflicts(const GraphDiff& diff1, const GraphDiff& diff2) const;
+
+private:
+    void diffNodes(const VisualGraph& oldGraph, const VisualGraph& newGraph, GraphDiff& result) const;
+    void diffEdges(const VisualGraph& oldGraph, const VisualGraph& newGraph, GraphDiff& result) const;
+    void diffNodeProperties(const VisualGraphNode& oldNode, const VisualGraphNode& newNode,
+                           GraphDiff& result) const;
+};
+
+/**
+ * @brief ID Normalizer - ensures consistent node IDs across serialization
+ *
+ * When graphs are saved and loaded, or when merging graphs,
+ * node IDs may become fragmented or inconsistent. The normalizer:
+ * - Reassigns node IDs to be contiguous starting from 1
+ * - Maintains topological order when possible
+ * - Updates all edge references
+ * - Provides mapping from old to new IDs
+ */
+class IDNormalizer
+{
+public:
+    IDNormalizer() = default;
+    ~IDNormalizer() = default;
+
+    /**
+     * @brief Normalize node IDs in a visual graph
+     * @param graph The graph to normalize (modified in place)
+     * @return Mapping from old IDs to new IDs
+     */
+    std::unordered_map<NodeId, NodeId> normalize(VisualGraph& graph) const;
+
+    /**
+     * @brief Normalize node IDs in an IR graph
+     * @param graph The IR graph to normalize (modified in place)
+     * @return Mapping from old IDs to new IDs
+     */
+    std::unordered_map<NodeId, NodeId> normalize(IRGraph& graph) const;
+
+    /**
+     * @brief Check if a graph needs normalization
+     * @param graph The graph to check
+     * @return True if IDs are not contiguous or start from 1
+     */
+    [[nodiscard]] bool needsNormalization(const VisualGraph& graph) const;
+
+    /**
+     * @brief Create normalized copy without modifying original
+     * @param graph The source graph
+     * @return Normalized copy and ID mapping
+     */
+    [[nodiscard]] std::pair<std::unique_ptr<VisualGraph>, std::unordered_map<NodeId, NodeId>>
+        createNormalizedCopy(const VisualGraph& graph) const;
+
+private:
+    std::vector<NodeId> getTopologicalOrder(const VisualGraph& graph) const;
+};
+
+/**
+ * @brief Round-trip guarantee validator
+ *
+ * Validates that conversions between representations are lossless:
+ * - Text -> IR -> Text produces equivalent output
+ * - IR -> VisualGraph -> IR produces equivalent output
+ * - Full chain: Text -> IR -> VisualGraph -> IR -> Text
+ */
+class RoundTripValidator
+{
+public:
+    RoundTripValidator();
+    ~RoundTripValidator();
+
+    /**
+     * @brief Validation result with detailed information
+     */
+    struct ValidationResult
+    {
+        bool isValid = false;
+        std::vector<std::string> differences;
+        std::string originalText;
+        std::string roundTrippedText;
+        std::unique_ptr<GraphDiff> graphDiff;
+    };
+
+    /**
+     * @brief Validate text round-trip through IR
+     */
+    [[nodiscard]] ValidationResult validateTextRoundTrip(const std::string& nmScript);
+
+    /**
+     * @brief Validate IR round-trip through VisualGraph
+     */
+    [[nodiscard]] ValidationResult validateIRRoundTrip(const IRGraph& ir);
+
+    /**
+     * @brief Validate full chain: Text -> IR -> VisualGraph -> IR -> Text
+     */
+    [[nodiscard]] ValidationResult validateFullRoundTrip(const std::string& nmScript);
+
+    /**
+     * @brief Compare two IR graphs for semantic equivalence
+     */
+    [[nodiscard]] bool areSemanticalllyEquivalent(const IRGraph& a, const IRGraph& b) const;
+
+private:
+    std::unique_ptr<RoundTripConverter> m_converter;
+    std::unique_ptr<GraphDiffer> m_differ;
+    std::unique_ptr<IDNormalizer> m_normalizer;
+};
+
 } // namespace NovelMind::scripting
