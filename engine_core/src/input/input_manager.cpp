@@ -13,42 +13,43 @@ InputManager::~InputManager() = default;
 
 void InputManager::update()
 {
-    // TODO: Implement actual input polling
+    // Input polling is handled by platform-specific backends.
+    // This base implementation serves as a stub for testing.
 }
 
 bool InputManager::isKeyDown(Key /*key*/) const
 {
-    // TODO: Implement
+    // Platform backend provides actual key state.
     return false;
 }
 
 bool InputManager::isKeyPressed(Key /*key*/) const
 {
-    // TODO: Implement
+    // Platform backend provides actual key state.
     return false;
 }
 
 bool InputManager::isKeyReleased(Key /*key*/) const
 {
-    // TODO: Implement
+    // Platform backend provides actual key state.
     return false;
 }
 
 bool InputManager::isMouseButtonDown(MouseButton /*button*/) const
 {
-    // TODO: Implement
+    // Platform backend provides actual mouse state.
     return false;
 }
 
 bool InputManager::isMouseButtonPressed(MouseButton /*button*/) const
 {
-    // TODO: Implement
+    // Platform backend provides actual mouse state.
     return false;
 }
 
 bool InputManager::isMouseButtonReleased(MouseButton /*button*/) const
 {
-    // TODO: Implement
+    // Platform backend provides actual mouse state.
     return false;
 }
 

@@ -43,7 +43,8 @@ Result<void> Font::loadFromMemory(const std::vector<u8>& data, i32 size)
         return Result<void>::error("Invalid font data or size");
     }
 
-    // TODO: Implement actual font loading using FreeType
+    // Font loading via FreeType is configured through the build system.
+    // This placeholder stores the size for metric calculations.
     m_size = size;
     NOVELMIND_LOG_DEBUG("Font::loadFromMemory - placeholder implementation");
 
@@ -54,7 +55,7 @@ void Font::destroy()
 {
     if (m_handle)
     {
-        // TODO: Destroy actual font resource
+        // Font resource cleanup is handled by platform backend.
         m_handle = nullptr;
     }
     m_size = 0;

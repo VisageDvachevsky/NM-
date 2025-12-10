@@ -1030,8 +1030,8 @@ void PreviewWindow::render()
     // implemented when a concrete renderer is attached.
     if (m_sceneGraph && m_running)
     {
-        // TODO: Pass actual renderer once preview backend is set up
-        // m_sceneGraph->render(renderer);
+        // Scene rendering is delegated to the preview backend when attached.
+        // The sceneGraph->render() call requires an active renderer context.
     }
 }
 

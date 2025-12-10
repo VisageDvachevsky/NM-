@@ -20,6 +20,8 @@ add_executable(unit_tests
     unit/test_parser.cpp
     unit/test_validator.cpp
     unit/test_animation.cpp
+    unit/test_snapshot.cpp
+    unit/test_fuzzing.cpp
 )
 
 target_link_libraries(unit_tests

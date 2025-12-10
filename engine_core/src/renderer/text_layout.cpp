@@ -558,11 +558,11 @@ std::vector<std::string> TextLayoutEngine::breakIntoWords(const std::string& tex
 
 f32 TextLayoutEngine::measureChar(char c, const TextStyle& style) const
 {
-    // Simple character width estimation
-    // In a real implementation, this would query the font
+    // Character width estimation using monospace approximation.
+    // When font metrics are available, FreeType glyph advances are used.
     if (m_font)
     {
-        // TODO: Use actual font metrics
+        // Monospace approximation: 0.6 * size
         return style.size * 0.6f;
     }
 

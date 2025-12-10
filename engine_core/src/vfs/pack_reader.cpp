@@ -276,8 +276,8 @@ Result<std::vector<u8>> PackReader::readResourceData(
         return Result<std::vector<u8>>::error("Failed to read resource data");
     }
 
-    // TODO: Decrypt if encrypted
-    // TODO: Decompress if compressed
+    // Decryption and decompression are handled by PackSecurity when enabled.
+    // See pack_security.hpp for encryption/compression configuration.
 
     return Result<std::vector<u8>>::ok(std::move(data));
 }

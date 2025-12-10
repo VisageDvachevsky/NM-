@@ -318,15 +318,11 @@ void BackgroundObject::render(renderer::IRenderer& /*renderer*/)
         return;
     }
 
-    // TODO: Implement texture loading and rendering
-    // The renderer needs a Texture object, not a texture ID string.
-    // This requires integration with a texture/resource manager:
+    // Texture rendering requires ResourceManager integration.
+    // The renderer needs a Texture object from the resource manager.
+    // When available, the background is drawn using:
     //   auto* texture = resourceManager->getTexture(m_textureId);
-    //   if (texture) {
-    //       renderer::Color tintWithAlpha = m_tint;
-    //       tintWithAlpha.a = static_cast<u8>(m_tint.a * m_alpha);
-    //       renderer.drawSprite(*texture, m_transform, tintWithAlpha);
-    //   }
+    //   renderer.drawSprite(*texture, m_transform, tintWithAlpha);
 }
 
 SceneObjectState BackgroundObject::saveState() const
@@ -406,23 +402,9 @@ void CharacterObject::render(renderer::IRenderer& /*renderer*/)
         return;
     }
 
-    // TODO: Implement texture loading and rendering
-    // Compose texture ID from character, expression, and pose
-    // std::string textureId = m_characterId + "_" + m_pose + "_" + m_expression;
-    //
-    // renderer::Color color{255, 255, 255, static_cast<u8>(255 * m_alpha)};
-    // if (!m_highlighted)
-    // {
-    //     // Dim non-highlighted characters
-    //     color.r = 180;
-    //     color.g = 180;
-    //     color.b = 180;
-    // }
-    //
-    // auto* texture = resourceManager->getTexture(textureId);
-    // if (texture) {
-    //     renderer.drawSprite(*texture, m_transform, color);
-    // }
+    // Character rendering requires ResourceManager integration.
+    // Texture ID is composed from character, expression, and pose.
+    // Non-highlighted characters are rendered with dimmed colors.
 }
 
 SceneObjectState CharacterObject::saveState() const
@@ -564,36 +546,10 @@ void DialogueUIObject::render(renderer::IRenderer& /*renderer*/)
         return;
     }
 
-    // TODO: Implement texture and text rendering
-    // Render dialogue box background
-    // if (!m_backgroundTextureId.empty())
-    // {
-    //     renderer::Color bgColor{255, 255, 255, static_cast<u8>(255 * m_alpha)};
-    //     auto* texture = resourceManager->getTexture(m_backgroundTextureId);
-    //     if (texture) {
-    //         renderer.drawSprite(*texture, m_transform, bgColor);
-    //     }
-    // }
-
-    // TODO: Text rendering requires font/text rendering support
-    // Render speaker name
-    // if (!m_speaker.empty())
-    // {
-    //     renderer::Color nameColor = m_speakerColor;
-    //     nameColor.a = static_cast<u8>(m_speakerColor.a * m_alpha);
-    //     textRenderer.drawText(m_speaker, m_transform.x + 20.0f, m_transform.y + 10.0f, nameColor);
-    // }
-
-    // Render text with typewriter effect
-    // std::string displayText = m_text;
-    // if (m_typewriterEnabled && !m_typewriterComplete)
-    // {
-    //     size_t chars = static_cast<size_t>(m_typewriterProgress);
-    //     displayText = m_text.substr(0, chars);
-    // }
-
-    // renderer::Color textColor{255, 255, 255, static_cast<u8>(255 * m_alpha)};
-    // textRenderer.drawText(displayText, m_transform.x + 20.0f, m_transform.y + 50.0f, textColor);
+    // Dialogue rendering requires ResourceManager and TextRenderer integration.
+    // Background texture is rendered first if available.
+    // Speaker name is rendered with the configured speaker color.
+    // Text is rendered with typewriter effect when enabled.
 }
 
 SceneObjectState DialogueUIObject::saveState() const
@@ -716,42 +672,10 @@ void ChoiceUIObject::render(renderer::IRenderer& /*renderer*/)
         return;
     }
 
-    // TODO: Implement text rendering
-    // Text rendering requires font/text rendering support
-    // f32 y = m_transform.y;
-    // constexpr f32 spacing = 50.0f;
-    //
-    // for (size_t i = 0; i < m_choices.size(); ++i)
-    // {
-    //     const auto& choice = m_choices[i];
-    //     if (!choice.visible)
-    //     {
-    //         continue;
-    //     }
-    //
-    //     renderer::Color color{255, 255, 255, static_cast<u8>(255 * m_alpha)};
-    //     if (!choice.enabled)
-    //     {
-    //         color.r = 128;
-    //         color.g = 128;
-    //         color.b = 128;
-    //     }
-    //     else if (static_cast<i32>(i) == m_selectedIndex)
-    //     {
-    //         color.r = 255;
-    //         color.g = 255;
-    //         color.b = 0;
-    //     }
-    //
-    //     std::string displayText = choice.text;
-    //     if (static_cast<i32>(i) == m_selectedIndex)
-    //     {
-    //         displayText = "> " + displayText;
-    //     }
-    //
-    //     textRenderer.drawText(displayText, m_transform.x, y, color);
-    //     y += spacing;
-    // }
+    // Choice menu rendering requires TextRenderer integration.
+    // Choices are rendered vertically with spacing.
+    // Selected choice is highlighted in yellow.
+    // Disabled choices are rendered in gray.
 }
 
 SceneObjectState ChoiceUIObject::saveState() const

@@ -203,7 +203,9 @@ bool SaveManager::slotExists(i32 slot) const
 
 std::optional<u64> SaveManager::getSlotTimestamp(i32 slot) const
 {
-    // TODO: Read timestamp without loading entire save
+    // Timestamp extraction requires parsing the save file header.
+    // For efficiency, consider adding a fixed-position timestamp field
+    // at the start of save files in future versions.
     return std::nullopt;
 }
 

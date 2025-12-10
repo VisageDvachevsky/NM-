@@ -709,12 +709,10 @@ void Compiler::compileProperty(const PropertyExpr& expr)
         compileExpression(*expr.object);
     }
 
-    // Property access - for now, just push property name
-    // This will need proper implementation for object system
+    // Property access currently pushes property name as a string.
+    // Object system integration will add a dedicated GET_PROPERTY opcode.
     u32 propIndex = addString(expr.property);
     emit(OpCode::PUSH_STRING, propIndex);
-
-    // TODO: Add proper property access opcode
 }
 
 } // namespace NovelMind::scripting

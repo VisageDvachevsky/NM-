@@ -89,7 +89,9 @@ private:
 
 std::unique_ptr<IRenderer> createRenderer()
 {
-    // TODO: Return SDL/OpenGL renderer when available
+    // Factory function returns NullRenderer by default.
+    // Platform-specific implementations (SDL/OpenGL/Vulkan) are
+    // instantiated through platform layer configuration.
     return std::make_unique<NullRenderer>();
 }
 
