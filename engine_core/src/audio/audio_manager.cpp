@@ -725,8 +725,8 @@ std::vector<AudioHandle> AudioManager::getActiveSources() const
 
 size_t AudioManager::getActiveSourceCount() const
 {
-    return std::count_if(m_sources.begin(), m_sources.end(),
-        [](const auto& s) { return s && s->isPlaying(); });
+    return static_cast<size_t>(std::count_if(m_sources.begin(), m_sources.end(),
+        [](const auto& s) { return s && s->isPlaying(); }));
 }
 
 void AudioManager::setEventCallback(AudioCallback callback)

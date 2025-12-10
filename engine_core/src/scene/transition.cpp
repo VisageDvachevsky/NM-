@@ -75,10 +75,10 @@ void FadeTransition::render(renderer::IRenderer& renderer)
         alpha = 1.0f - t; // 1 -> 0 (opaque to transparent)
     }
 
-    renderer::Color color = m_fadeColor;
-    color.a = static_cast<u8>(alpha * 255.0f);
+    renderer::Color fadeColorWithAlpha = m_fadeColor;
+    fadeColorWithAlpha.a = static_cast<u8>(alpha * 255.0f);
 
-    renderer.setFade(alpha, m_fadeColor);
+    renderer.setFade(alpha, fadeColorWithAlpha);
 }
 
 bool FadeTransition::isComplete() const

@@ -210,9 +210,9 @@ TEST_CASE("SceneSnapshot - Choice UI state capture", "[snapshot]")
     graph.setSceneId("branch_point");
 
     std::vector<ChoiceUIObject::ChoiceOption> choices = {
-        {"opt1", "Go left", true, true},
-        {"opt2", "Go right", false, true},  // disabled
-        {"opt3", "Stay here", true, true}
+        {"opt1", "Go left", true, true, ""},
+        {"opt2", "Go right", false, true, ""},  // disabled
+        {"opt3", "Stay here", true, true, ""}
     };
     auto* choiceUI = graph.showChoices(choices);
     REQUIRE(choiceUI != nullptr);

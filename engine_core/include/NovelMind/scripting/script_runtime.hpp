@@ -389,7 +389,7 @@ createCharacterFromDecl(const CharacterDecl& decl)
         {
             try
             {
-                u32 hex = std::stoul(colorStr.substr(0, 6), nullptr, 16);
+                u32 hex = static_cast<u32>(std::stoul(colorStr.substr(0, 6), nullptr, 16));
                 u8 r = (hex >> 16) & 0xFF;
                 u8 g = (hex >> 8) & 0xFF;
                 u8 b = hex & 0xFF;

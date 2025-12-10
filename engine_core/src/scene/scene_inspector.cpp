@@ -623,7 +623,7 @@ Result<void> SceneInspectorAPI::rotateObject(const std::string& id, f32 angle, b
     return Result<void>::ok();
 }
 
-Result<void> SceneInspectorAPI::setObjectLayer(const std::string& id, LayerType layer, bool recordUndo)
+Result<void> SceneInspectorAPI::setObjectLayer(const std::string& id, LayerType layer, bool /*recordUndo*/)
 {
     LayerType currentLayer = findObjectLayer(id);
     if (currentLayer == layer)
@@ -917,7 +917,7 @@ void SceneInspectorAPI::restoreSceneSnapshot(const SceneState& snapshot)
     notifySceneModified();
 }
 
-void SceneInspectorAPI::onObjectAdded(const std::string& objectId, SceneObjectType type)
+void SceneInspectorAPI::onObjectAdded(const std::string& /*objectId*/, SceneObjectType /*type*/)
 {
     notifySceneModified();
 }
@@ -928,12 +928,12 @@ void SceneInspectorAPI::onObjectRemoved(const std::string& objectId)
     notifySceneModified();
 }
 
-void SceneInspectorAPI::onPropertyChanged(const PropertyChange& change)
+void SceneInspectorAPI::onPropertyChanged(const PropertyChange& /*change*/)
 {
     notifySceneModified();
 }
 
-void SceneInspectorAPI::onLayerChanged(const std::string& objectId, const std::string& newLayer)
+void SceneInspectorAPI::onLayerChanged(const std::string& /*objectId*/, const std::string& /*newLayer*/)
 {
     notifySceneModified();
 }
