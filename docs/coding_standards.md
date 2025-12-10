@@ -20,26 +20,31 @@ This document defines the coding standards and conventions for the NovelMind pro
 | Constants | ALL_CAPS | `MAX_SPRITES`, `DEFAULT_WIDTH` |
 | Enums | PascalCase | `enum class RenderMode` |
 | Enum Values | PascalCase | `RenderMode::Immediate` |
-| Namespaces | lowercase, short | `nm::core`, `nm::vfs` |
-| Macros | ALL_CAPS with NM_ prefix | `NM_ASSERT`, `NM_DEBUG` |
+| Namespaces | PascalCase | `NovelMind::Core`, `NovelMind::VFS` |
+| Macros | ALL_CAPS with NOVELMIND_ prefix | `NOVELMIND_ASSERT`, `NOVELMIND_DEBUG` |
 | Template Parameters | PascalCase | `template<typename ValueType>` |
 | File Names | snake_case | `scene_manager.hpp`, `vfs_interface.cpp` |
 
 ### Namespace Structure
 
 ```cpp
-namespace nm {
-    namespace core { }      // Core utilities
-    namespace platform { }  // Platform abstraction
-    namespace vfs { }       // Virtual file system
-    namespace renderer { }  // 2D rendering
-    namespace scripting { } // Script engine
-    namespace scene { }     // Scene management
-    namespace audio { }     // Audio system
-    namespace input { }     // Input handling
-    namespace save { }      // Save/load system
+namespace NovelMind {
+    namespace Core { }      // Core utilities, types, result
+    namespace Platform { }  // Platform abstraction
+    namespace VFS { }       // Virtual file system
+    namespace Renderer { }  // 2D rendering
+    namespace Scripting { } // Script engine
+    namespace Scene { }     // Scene management
+    namespace Audio { }     // Audio system
+    namespace Input { }     // Input handling
+    namespace Save { }      // Save/load system
 }
 ```
+
+**Note**: The top-level namespace is `NovelMind`, not `nm`. This provides:
+- Clear, self-documenting namespace that is recognizable in any codebase
+- No conflicts with other libraries
+- Professional, polished appearance
 
 ## Code Formatting
 
@@ -50,7 +55,7 @@ namespace nm {
 - **Braces**: Allman style (opening brace on new line)
 
 ```cpp
-namespace nm::core
+namespace NovelMind::Core
 {
 
 class Application
@@ -70,7 +75,7 @@ private:
     Config m_config;
 };
 
-} // namespace nm::core
+} // namespace NovelMind::Core
 ```
 
 ### Function Definitions
@@ -143,9 +148,9 @@ Use `#pragma once` for header guards:
 #pragma once
 
 #include <cstdint>
-#include "nm/core/types.hpp"
+#include "NovelMind/core/types.hpp"
 
-namespace nm::vfs
+namespace NovelMind::VFS
 {
     // ...
 }
@@ -167,9 +172,9 @@ namespace nm::vfs
 
 #include <SDL.h>
 
-#include "nm/core/logger.hpp"
-#include "nm/renderer/sprite.hpp"
-#include "nm/vfs/resource.hpp"
+#include "NovelMind/core/logger.hpp"
+#include "NovelMind/renderer/sprite.hpp"
+#include "NovelMind/vfs/resource.hpp"
 ```
 
 ### Forward Declarations
@@ -178,7 +183,7 @@ Prefer forward declarations in headers when possible:
 
 ```cpp
 // In header
-namespace nm::renderer
+namespace NovelMind::Renderer
 {
     class Texture;
     class Sprite;
@@ -186,7 +191,7 @@ namespace nm::renderer
 
 class SceneManager
 {
-    std::unique_ptr<nm::renderer::Sprite> m_background;
+    std::unique_ptr<NovelMind::Renderer::Sprite> m_background;
 };
 ```
 
@@ -356,12 +361,12 @@ else
 Use assertions for programmer errors:
 
 ```cpp
-#define NM_ASSERT(condition, message) \
-    do { if (!(condition)) { nm::core::assertFailed(#condition, message, __FILE__, __LINE__); } } while(0)
+#define NOVELMIND_ASSERT(condition, message) \
+    do { if (!(condition)) { NovelMind::Core::assertFailed(#condition, message, __FILE__, __LINE__); } } while(0)
 
 void processItem(Item* item)
 {
-    NM_ASSERT(item != nullptr, "Item must not be null");
+    NOVELMIND_ASSERT(item != nullptr, "Item must not be null");
     // ...
 }
 ```
@@ -430,11 +435,11 @@ constexpr int ATLAS_SIZE = 2048;
 
 ```cpp
 #include <catch2/catch_test_macros.hpp>
-#include "nm/vfs/virtual_fs.hpp"
+#include "NovelMind/vfs/virtual_fs.hpp"
 
 TEST_CASE("VirtualFS loads resources correctly", "[vfs]")
 {
-    nm::vfs::VirtualFS vfs;
+    NovelMind::VFS::VirtualFS vfs;
 
     SECTION("can load existing resource")
     {

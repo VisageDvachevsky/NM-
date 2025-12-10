@@ -1,6 +1,6 @@
-#include "nm/core/timer.hpp"
+#include "NovelMind/core/timer.hpp"
 
-namespace nm::core
+namespace NovelMind::core
 {
 
 Timer::Timer()
@@ -49,4 +49,4 @@ f64 Timer::getDeltaTime() const
     return m_deltaTime;
 }
 
-} // namespace nm::core
+} // namespace NovelMind::core

@@ -3,14 +3,24 @@ add_library(engine_core STATIC
     src/core/logger.cpp
     src/core/application.cpp
     src/core/timer.cpp
+    src/core/profiler.cpp
+    src/core/debug_overlay.cpp
 
     # Platform
     src/core/platform_sdl.cpp
 
-    # VFS
+    # VFS (Legacy)
     src/vfs/virtual_fs.cpp
     src/vfs/memory_fs.cpp
     src/vfs/pack_reader.cpp
+
+    # VFS (Enhanced)
+    src/vfs/file_handle.cpp
+    src/vfs/resource_id.cpp
+    src/vfs/file_system_backend.cpp
+    src/vfs/resource_cache.cpp
+    src/vfs/virtual_file_system.cpp
+    src/vfs/pack_security.cpp
 
     # Renderer
     src/renderer/renderer.cpp
@@ -21,6 +31,7 @@ add_library(engine_core STATIC
     # Scripting
     src/scripting/interpreter.cpp
     src/scripting/vm.cpp
+    src/scripting/vm_security.cpp
 
     # Scene
     src/scene/scene_manager.cpp
@@ -44,20 +55,20 @@ target_include_directories(engine_core
 
 target_link_libraries(engine_core
     PRIVATE
-        nm_compiler_options
+        novelmind_compiler_options
 )
 
 # Find SDL2 (optional for now, will be required later)
 find_package(SDL2 QUIET)
 if(SDL2_FOUND)
     target_link_libraries(engine_core PRIVATE SDL2::SDL2)
-    target_compile_definitions(engine_core PRIVATE NM_HAS_SDL2)
+    target_compile_definitions(engine_core PRIVATE NOVELMIND_HAS_SDL2)
 endif()
 
 # Define version
 target_compile_definitions(engine_core
     PUBLIC
-        NM_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
-        NM_VERSION_MINOR=${PROJECT_VERSION_MINOR}
-        NM_VERSION_PATCH=${PROJECT_VERSION_PATCH}
+        NOVELMIND_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
+        NOVELMIND_VERSION_MINOR=${PROJECT_VERSION_MINOR}
+        NOVELMIND_VERSION_PATCH=${PROJECT_VERSION_PATCH}
 )

@@ -1,9 +1,9 @@
 #include <catch2/catch_test_macros.hpp>
-#include "nm/core/timer.hpp"
+#include "NovelMind/core/timer.hpp"
 #include <thread>
 #include <chrono>
 
-using namespace nm::core;
+using namespace NovelMind::core;
 
 TEST_CASE("Timer initial state", "[timer]")
 {

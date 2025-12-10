@@ -1,8 +1,8 @@
-#include "nm/scripting/vm.hpp"
-#include "nm/core/logger.hpp"
+#include "NovelMind/scripting/vm.hpp"
+#include "NovelMind/core/logger.hpp"
 #include <cstring>
 
-namespace nm::scripting
+namespace NovelMind::scripting
 {
 
 VirtualMachine::VirtualMachine()
@@ -308,7 +308,7 @@ void VirtualMachine::executeInstruction(const Instruction& instr)
             }
             else
             {
-                NM_LOG_ERROR("Division by zero");
+                NOVELMIND_LOG_ERROR("Division by zero");
                 push(0);
             }
             break;
@@ -431,7 +431,7 @@ void VirtualMachine::executeInstruction(const Instruction& instr)
         }
 
         default:
-            NM_LOG_WARN("Unknown opcode");
+            NOVELMIND_LOG_WARN("Unknown opcode");
             break;
     }
 }
@@ -445,7 +445,7 @@ Value VirtualMachine::pop()
 {
     if (m_stack.empty())
     {
-        NM_LOG_WARN("Stack underflow");
+        NOVELMIND_LOG_WARN("Stack underflow");
         return std::monostate{};
     }
     Value val = std::move(m_stack.back());
@@ -460,8 +460,8 @@ const std::string& VirtualMachine::getString(u32 index) const
     {
         return m_stringTable[index];
     }
-    NM_LOG_WARN("Invalid string index");
+    NOVELMIND_LOG_WARN("Invalid string index");
     return empty;
 }
 
-} // namespace nm::scripting
+} // namespace NovelMind::scripting

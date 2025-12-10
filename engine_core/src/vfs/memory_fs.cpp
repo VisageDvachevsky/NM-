@@ -1,6 +1,6 @@
-#include "nm/vfs/memory_fs.hpp"
+#include "NovelMind/vfs/memory_fs.hpp"
 
-namespace nm::vfs
+namespace NovelMind::vfs
 {
 
 Result<void> MemoryFileSystem::mount(const std::string& /*packPath*/)
@@ -115,4 +115,4 @@ u32 MemoryFileSystem::calculateChecksum(const std::vector<u8>& data)
     return ~crc;
 }
 
-} // namespace nm::vfs
+} // namespace NovelMind::vfs

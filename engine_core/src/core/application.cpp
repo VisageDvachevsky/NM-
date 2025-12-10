@@ -1,7 +1,7 @@
-#include "nm/core/application.hpp"
-#include "nm/core/logger.hpp"
+#include "NovelMind/core/application.hpp"
+#include "NovelMind/core/logger.hpp"
 
-namespace nm::core
+namespace NovelMind::core
 {
 
 Application::Application()
@@ -23,13 +23,13 @@ Result<void> Application::initialize(const EngineConfig& config)
         Logger::instance().setLevel(LogLevel::Debug);
     }
 
-    NM_LOG_INFO("Initializing NovelMind engine...");
+    NOVELMIND_LOG_INFO("Initializing NovelMind engine...");
 
     m_window = platform::createWindow();
     auto windowResult = m_window->create(m_config.window);
     if (windowResult.isError())
     {
-        NM_LOG_ERROR("Failed to create window");
+        NOVELMIND_LOG_ERROR("Failed to create window");
         return windowResult;
     }
 
@@ -38,7 +38,7 @@ Result<void> Application::initialize(const EngineConfig& config)
 
     onInitialize();
 
-    NM_LOG_INFO("Engine initialized successfully");
+    NOVELMIND_LOG_INFO("Engine initialized successfully");
     return Result<void>::ok();
 }
 
@@ -49,7 +49,7 @@ void Application::shutdown()
         return;
     }
 
-    NM_LOG_INFO("Shutting down engine...");
+    NOVELMIND_LOG_INFO("Shutting down engine...");
 
     onShutdown();
 
@@ -61,18 +61,18 @@ void Application::shutdown()
 
     m_running = false;
 
-    NM_LOG_INFO("Engine shutdown complete");
+    NOVELMIND_LOG_INFO("Engine shutdown complete");
 }
 
 void Application::run()
 {
     if (!m_running)
     {
-        NM_LOG_ERROR("Cannot run: engine not initialized");
+        NOVELMIND_LOG_ERROR("Cannot run: engine not initialized");
         return;
     }
 
-    NM_LOG_INFO("Starting main loop...");
+    NOVELMIND_LOG_INFO("Starting main loop...");
     mainLoop();
 }
 
@@ -142,4 +142,4 @@ void Application::mainLoop()
     }
 }
 
-} // namespace nm::core
+} // namespace NovelMind::core

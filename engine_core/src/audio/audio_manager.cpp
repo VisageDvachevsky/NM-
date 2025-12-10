@@ -1,7 +1,7 @@
-#include "nm/audio/audio_manager.hpp"
-#include "nm/core/logger.hpp"
+#include "NovelMind/audio/audio_manager.hpp"
+#include "NovelMind/core/logger.hpp"
 
-namespace nm::audio
+namespace NovelMind::audio
 {
 
 AudioManager::AudioManager()
@@ -21,7 +21,7 @@ Result<void> AudioManager::initialize()
 {
     // TODO: Initialize audio backend (SDL_mixer, etc.)
     m_initialized = true;
-    NM_LOG_INFO("Audio manager initialized (placeholder)");
+    NOVELMIND_LOG_INFO("Audio manager initialized (placeholder)");
     return Result<void>::ok();
 }
 
@@ -32,14 +32,14 @@ void AudioManager::shutdown()
         stopAllSounds();
         stopMusic();
         m_initialized = false;
-        NM_LOG_INFO("Audio manager shut down");
+        NOVELMIND_LOG_INFO("Audio manager shut down");
     }
 }
 
 void AudioManager::playSound(const std::string& id, f32 /*volume*/)
 {
     // TODO: Implement sound playback
-    NM_LOG_DEBUG("Playing sound: " + id);
+    NOVELMIND_LOG_DEBUG("Playing sound: " + id);
 }
 
 void AudioManager::stopAllSounds()
@@ -51,7 +51,7 @@ void AudioManager::playMusic(const std::string& id, bool /*loop*/)
 {
     // TODO: Implement music playback
     m_musicPlaying = true;
-    NM_LOG_DEBUG("Playing music: " + id);
+    NOVELMIND_LOG_DEBUG("Playing music: " + id);
 }
 
 void AudioManager::stopMusic()
@@ -89,4 +89,4 @@ f32 AudioManager::getMasterVolume() const
     return m_masterVolume;
 }
 
-} // namespace nm::audio
+} // namespace NovelMind::audio

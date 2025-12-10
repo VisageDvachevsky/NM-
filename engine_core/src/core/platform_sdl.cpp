@@ -1,14 +1,14 @@
-#include "nm/platform/window.hpp"
-#include "nm/core/logger.hpp"
+#include "NovelMind/platform/window.hpp"
+#include "NovelMind/core/logger.hpp"
 
-#ifdef NM_HAS_SDL2
+#ifdef NOVELMIND_HAS_SDL2
 #include <SDL.h>
 #endif
 
-namespace nm::platform
+namespace NovelMind::platform
 {
 
-#ifdef NM_HAS_SDL2
+#ifdef NOVELMIND_HAS_SDL2
 
 class SDLWindow : public IWindow
 {
@@ -53,7 +53,7 @@ public:
         m_config = config;
         m_shouldClose = false;
 
-        NM_LOG_INFO("Window created successfully");
+        NOVELMIND_LOG_INFO("Window created successfully");
         return Result<void>::ok();
     }
 
@@ -154,7 +154,7 @@ private:
     bool m_shouldClose = false;
 };
 
-#endif // NM_HAS_SDL2
+#endif // NOVELMIND_HAS_SDL2
 
 class NullWindow : public IWindow
 {
@@ -163,7 +163,7 @@ public:
     {
         m_config = config;
         m_shouldClose = false;
-        NM_LOG_WARN("Using null window (no SDL2 available)");
+        NOVELMIND_LOG_WARN("Using null window (no SDL2 available)");
         return Result<void>::ok();
     }
 
@@ -235,11 +235,11 @@ private:
 
 std::unique_ptr<IWindow> createWindow()
 {
-#ifdef NM_HAS_SDL2
+#ifdef NOVELMIND_HAS_SDL2
     return std::make_unique<SDLWindow>();
 #else
     return std::make_unique<NullWindow>();
 #endif
 }
 
-} // namespace nm::platform
+} // namespace NovelMind::platform

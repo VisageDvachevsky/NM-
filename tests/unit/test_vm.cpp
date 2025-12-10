@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
-#include "nm/scripting/vm.hpp"
+#include "NovelMind/scripting/vm.hpp"
 
-using namespace nm::scripting;
+using namespace NovelMind::scripting;
 
 TEST_CASE("VM initial state", "[scripting]")
 {
@@ -56,8 +56,8 @@ TEST_CASE("VM arithmetic operations", "[scripting]")
     vm.run();
 
     auto val = vm.getVariable("result");
-    REQUIRE(std::holds_alternative<nm::i32>(val));
-    REQUIRE(std::get<nm::i32>(val) == 15);
+    REQUIRE(std::holds_alternative<NovelMind::i32>(val));
+    REQUIRE(std::get<NovelMind::i32>(val) == 15);
 }
 
 TEST_CASE("VM subtraction", "[scripting]")
@@ -76,7 +76,7 @@ TEST_CASE("VM subtraction", "[scripting]")
     vm.run();
 
     auto val = vm.getVariable("result");
-    REQUIRE(std::get<nm::i32>(val) == 12);
+    REQUIRE(std::get<NovelMind::i32>(val) == 12);
 }
 
 TEST_CASE("VM multiplication", "[scripting]")
@@ -95,7 +95,7 @@ TEST_CASE("VM multiplication", "[scripting]")
     vm.run();
 
     auto val = vm.getVariable("result");
-    REQUIRE(std::get<nm::i32>(val) == 42);
+    REQUIRE(std::get<NovelMind::i32>(val) == 42);
 }
 
 TEST_CASE("VM comparison operations", "[scripting]")
@@ -136,7 +136,7 @@ TEST_CASE("VM conditional jump", "[scripting]")
     vm.run();
 
     auto val = vm.getVariable("result");
-    REQUIRE(std::get<nm::i32>(val) == 1);
+    REQUIRE(std::get<NovelMind::i32>(val) == 1);
 }
 
 TEST_CASE("VM flags", "[scripting]")
@@ -158,11 +158,11 @@ TEST_CASE("VM variables", "[scripting]")
 
     vm.load({{OpCode::HALT, 0}}, {});
 
-    vm.setVariable("int_var", nm::i32{100});
+    vm.setVariable("int_var", NovelMind::i32{100});
     vm.setVariable("str_var", std::string{"hello"});
     vm.setVariable("bool_var", true);
 
-    REQUIRE(std::get<nm::i32>(vm.getVariable("int_var")) == 100);
+    REQUIRE(std::get<NovelMind::i32>(vm.getVariable("int_var")) == 100);
     REQUIRE(std::get<std::string>(vm.getVariable("str_var")) == "hello");
     REQUIRE(std::get<bool>(vm.getVariable("bool_var")) == true);
 }

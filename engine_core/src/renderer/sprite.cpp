@@ -1,6 +1,6 @@
-#include "nm/renderer/sprite.hpp"
+#include "NovelMind/renderer/sprite.hpp"
 
-namespace nm::renderer
+namespace NovelMind::renderer
 {
 
 Sprite::Sprite()
@@ -92,4 +92,4 @@ bool Sprite::isVisible() const
     return m_visible;
 }
 
-} // namespace nm::renderer
+} // namespace NovelMind::renderer

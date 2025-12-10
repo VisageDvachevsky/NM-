@@ -1,8 +1,8 @@
-#include "nm/scene/scene_manager.hpp"
-#include "nm/core/logger.hpp"
+#include "NovelMind/scene/scene_manager.hpp"
+#include "NovelMind/core/logger.hpp"
 #include <algorithm>
 
-namespace nm::scene
+namespace NovelMind::scene
 {
 
 SceneManager::SceneManager() = default;
@@ -16,7 +16,7 @@ Result<void> SceneManager::loadScene(const std::string& sceneId)
 {
     unloadScene();
     m_currentSceneId = sceneId;
-    NM_LOG_INFO("Loaded scene: " + sceneId);
+    NOVELMIND_LOG_INFO("Loaded scene: " + sceneId);
     return Result<void>::ok();
 }
 
@@ -111,4 +111,4 @@ std::vector<std::unique_ptr<SceneObject>>& SceneManager::getLayer(LayerType laye
     return m_backgroundLayer;
 }
 
-} // namespace nm::scene
+} // namespace NovelMind::scene

@@ -17,9 +17,9 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # Options
-option(NM_BUILD_TESTS "Build unit tests" ON)
-option(NM_BUILD_EDITOR "Build visual editor" OFF)
-option(NM_ENABLE_ASAN "Enable AddressSanitizer" OFF)
+option(NOVELMIND_BUILD_TESTS "Build unit tests" ON)
+option(NOVELMIND_BUILD_EDITOR "Build visual editor" OFF)
+option(NOVELMIND_ENABLE_ASAN "Enable AddressSanitizer" OFF)
 
 # Output directories
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -27,9 +27,9 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # Compiler warnings
-add_library(nm_compiler_options INTERFACE)
+add_library(novelmind_compiler_options INTERFACE)
 
-target_compile_options(nm_compiler_options INTERFACE
+target_compile_options(novelmind_compiler_options INTERFACE
     $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:
         -Wall
         -Wextra
@@ -60,14 +60,14 @@ target_compile_options(nm_compiler_options INTERFACE
 )
 
 # AddressSanitizer
-if(NM_ENABLE_ASAN)
-    target_compile_options(nm_compiler_options INTERFACE
+if(NOVELMIND_ENABLE_ASAN)
+    target_compile_options(novelmind_compiler_options INTERFACE
         $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:
             -fsanitize=address
             -fno-omit-frame-pointer
         >
     )
-    target_link_options(nm_compiler_options INTERFACE
+    target_link_options(novelmind_compiler_options INTERFACE
         $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:
             -fsanitize=address
         >
@@ -78,13 +78,13 @@ endif()
 add_subdirectory(engine_core)
 
 # Tests
-if(NM_BUILD_TESTS)
+if(NOVELMIND_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
 endif()
 
 # Editor (optional)
-if(NM_BUILD_EDITOR)
+if(NOVELMIND_BUILD_EDITOR)
     add_subdirectory(editor)
 endif()
 
@@ -98,6 +98,6 @@ install(TARGETS engine_core
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
-install(DIRECTORY engine_core/include/nm
+install(DIRECTORY engine_core/include/NovelMind
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )

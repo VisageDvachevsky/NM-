@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
-#include "nm/core/result.hpp"
+#include "NovelMind/core/result.hpp"
 
-using namespace nm;
+using namespace NovelMind;
 
 TEST_CASE("Result<T> ok value", "[result]")
 {

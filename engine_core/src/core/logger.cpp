@@ -1,11 +1,11 @@
-#include "nm/core/logger.hpp"
+#include "NovelMind/core/logger.hpp"
 
 #include <chrono>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
 
-namespace nm::core
+namespace NovelMind::core
 {
 
 Logger& Logger::instance()
@@ -155,4 +155,4 @@ std::string Logger::getCurrentTimestamp() const
     return oss.str();
 }
 
-} // namespace nm::core
+} // namespace NovelMind::core

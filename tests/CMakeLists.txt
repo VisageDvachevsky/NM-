@@ -22,7 +22,7 @@ target_link_libraries(unit_tests
     PRIVATE
         engine_core
         Catch2::Catch2WithMain
-        nm_compiler_options
+        novelmind_compiler_options
 )
 
 # Register tests

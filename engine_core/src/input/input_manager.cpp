@@ -1,6 +1,6 @@
-#include "nm/input/input_manager.hpp"
+#include "NovelMind/input/input_manager.hpp"
 
-namespace nm::input
+namespace NovelMind::input
 {
 
 InputManager::InputManager()
@@ -62,4 +62,4 @@ i32 InputManager::getMouseY() const
     return m_mouseY;
 }
 
-} // namespace nm::input
+} // namespace NovelMind::input

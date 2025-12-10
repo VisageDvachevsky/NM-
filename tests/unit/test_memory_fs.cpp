@@ -1,8 +1,8 @@
 #include <catch2/catch_test_macros.hpp>
-#include "nm/vfs/memory_fs.hpp"
+#include "NovelMind/vfs/memory_fs.hpp"
 
-using namespace nm;
-using namespace nm::vfs;
+using namespace NovelMind;
+using namespace NovelMind::vfs;
 
 TEST_CASE("MemoryFS add and read resource", "[vfs]")
 {

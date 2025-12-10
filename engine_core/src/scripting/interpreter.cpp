@@ -1,8 +1,8 @@
-#include "nm/scripting/interpreter.hpp"
-#include "nm/core/logger.hpp"
+#include "NovelMind/scripting/interpreter.hpp"
+#include "NovelMind/core/logger.hpp"
 #include <cstring>
 
-namespace nm::scripting
+namespace NovelMind::scripting
 {
 
 constexpr u32 SCRIPT_MAGIC = 0x43534D4E;  // "NMSC"
@@ -236,4 +236,4 @@ void ScriptInterpreter::registerCallback(OpCode op, VirtualMachine::NativeCallba
     m_vm->registerCallback(op, std::move(callback));
 }
 
-} // namespace nm::scripting
+} // namespace NovelMind::scripting

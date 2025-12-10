@@ -1,8 +1,8 @@
-#include "nm/vfs/pack_reader.hpp"
-#include "nm/core/logger.hpp"
+#include "NovelMind/vfs/pack_reader.hpp"
+#include "NovelMind/core/logger.hpp"
 #include <cstring>
 
-namespace nm::vfs
+namespace NovelMind::vfs
 {
 
 PackReader::~PackReader()
@@ -47,7 +47,7 @@ Result<void> PackReader::mount(const std::string& packPath)
     }
 
     m_packs[packPath] = std::move(pack);
-    NM_LOG_INFO("Mounted pack: " + packPath);
+    NOVELMIND_LOG_INFO("Mounted pack: " + packPath);
 
     return Result<void>::ok();
 }
@@ -56,14 +56,14 @@ void PackReader::unmount(const std::string& packPath)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_packs.erase(packPath);
-    NM_LOG_INFO("Unmounted pack: " + packPath);
+    NOVELMIND_LOG_INFO("Unmounted pack: " + packPath);
 }
 
 void PackReader::unmountAll()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_packs.clear();
-    NM_LOG_INFO("Unmounted all packs");
+    NOVELMIND_LOG_INFO("Unmounted all packs");
 }
 
 Result<std::vector<u8>> PackReader::readFile(const std::string& resourceId) const
@@ -282,4 +282,4 @@ Result<std::vector<u8>> PackReader::readResourceData(
     return Result<std::vector<u8>>::ok(std::move(data));
 }
 
-} // namespace nm::vfs
+} // namespace NovelMind::vfs

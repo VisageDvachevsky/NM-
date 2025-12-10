@@ -1,9 +1,9 @@
-#include "nm/save/save_manager.hpp"
-#include "nm/core/logger.hpp"
+#include "NovelMind/save/save_manager.hpp"
+#include "NovelMind/core/logger.hpp"
 #include <fstream>
 #include <chrono>
 
-namespace nm::save
+namespace NovelMind::save
 {
 
 SaveManager::SaveManager()
@@ -86,7 +86,7 @@ Result<void> SaveManager::save(i32 slot, const SaveData& data)
     u32 checksum = calculateChecksum(data);
     file.write(reinterpret_cast<const char*>(&checksum), sizeof(checksum));
 
-    NM_LOG_INFO("Saved to slot " + std::to_string(slot));
+    NOVELMIND_LOG_INFO("Saved to slot " + std::to_string(slot));
     return Result<void>::ok();
 }
 
@@ -169,7 +169,7 @@ Result<SaveData> SaveManager::load(i32 slot)
     // Checksum
     file.read(reinterpret_cast<char*>(&data.checksum), sizeof(data.checksum));
 
-    NM_LOG_INFO("Loaded from slot " + std::to_string(slot));
+    NOVELMIND_LOG_INFO("Loaded from slot " + std::to_string(slot));
     return Result<SaveData>::ok(std::move(data));
 }
 
@@ -186,7 +186,7 @@ Result<void> SaveManager::deleteSave(i32 slot)
         return Result<void>::error("Failed to delete save file");
     }
 
-    NM_LOG_INFO("Deleted save slot " + std::to_string(slot));
+    NOVELMIND_LOG_INFO("Deleted save slot " + std::to_string(slot));
     return Result<void>::ok();
 }
 
@@ -267,4 +267,4 @@ u32 SaveManager::calculateChecksum(const SaveData& data)
     return checksum;
 }
 
-} // namespace nm::save
+} // namespace NovelMind::save

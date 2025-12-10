@@ -1,7 +1,7 @@
-#include "nm/renderer/texture.hpp"
-#include "nm/core/logger.hpp"
+#include "NovelMind/renderer/texture.hpp"
+#include "NovelMind/core/logger.hpp"
 
-namespace nm::renderer
+namespace NovelMind::renderer
 {
 
 Texture::Texture()
@@ -50,7 +50,7 @@ Result<void> Texture::loadFromMemory(const std::vector<u8>& data)
 
     // TODO: Implement actual image loading using stb_image or similar
     // For now, just log and return success as a placeholder
-    NM_LOG_DEBUG("Texture::loadFromMemory - placeholder implementation");
+    NOVELMIND_LOG_DEBUG("Texture::loadFromMemory - placeholder implementation");
 
     return Result<void>::ok();
 }
@@ -67,7 +67,7 @@ Result<void> Texture::loadFromRGBA(const u8* pixels, i32 width, i32 height)
     m_width = width;
     m_height = height;
 
-    NM_LOG_DEBUG("Texture::loadFromRGBA - placeholder implementation");
+    NOVELMIND_LOG_DEBUG("Texture::loadFromRGBA - placeholder implementation");
 
     return Result<void>::ok();
 }
@@ -103,4 +103,4 @@ void* Texture::getNativeHandle() const
     return m_handle;
 }
 
-} // namespace nm::renderer
+} // namespace NovelMind::renderer

@@ -1,6 +1,6 @@
-#include "nm/scene/scene_object.hpp"
+#include "NovelMind/scene/scene_object.hpp"
 
-namespace nm::scene
+namespace NovelMind::scene
 {
 
 SceneObject::SceneObject(const std::string& id)
@@ -67,4 +67,4 @@ void SceneObject::update(f64 /*deltaTime*/)
     // Override in derived classes
 }
 
-} // namespace nm::scene
+} // namespace NovelMind::scene

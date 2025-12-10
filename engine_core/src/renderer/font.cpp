@@ -1,7 +1,7 @@
-#include "nm/renderer/font.hpp"
-#include "nm/core/logger.hpp"
+#include "NovelMind/renderer/font.hpp"
+#include "NovelMind/core/logger.hpp"
 
-namespace nm::renderer
+namespace NovelMind::renderer
 {
 
 Font::Font()
@@ -45,7 +45,7 @@ Result<void> Font::loadFromMemory(const std::vector<u8>& data, i32 size)
 
     // TODO: Implement actual font loading using FreeType
     m_size = size;
-    NM_LOG_DEBUG("Font::loadFromMemory - placeholder implementation");
+    NOVELMIND_LOG_DEBUG("Font::loadFromMemory - placeholder implementation");
 
     return Result<void>::ok();
 }
@@ -75,4 +75,4 @@ void* Font::getNativeHandle() const
     return m_handle;
 }
 
-} // namespace nm::renderer
+} // namespace NovelMind::renderer

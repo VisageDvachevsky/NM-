@@ -1,7 +1,7 @@
-#include "nm/renderer/renderer.hpp"
-#include "nm/core/logger.hpp"
+#include "NovelMind/renderer/renderer.hpp"
+#include "NovelMind/core/logger.hpp"
 
-namespace nm::renderer
+namespace NovelMind::renderer
 {
 
 class NullRenderer : public IRenderer
@@ -11,7 +11,7 @@ public:
     {
         m_width = window.getWidth();
         m_height = window.getHeight();
-        NM_LOG_WARN("Using null renderer");
+        NOVELMIND_LOG_WARN("Using null renderer");
         return Result<void>::ok();
     }
 
@@ -93,4 +93,4 @@ std::unique_ptr<IRenderer> createRenderer()
     return std::make_unique<NullRenderer>();
 }
 
-} // namespace nm::renderer
+} // namespace NovelMind::renderer
