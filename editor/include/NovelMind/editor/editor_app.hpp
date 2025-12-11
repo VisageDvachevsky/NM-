@@ -545,6 +545,14 @@ private:
     void showAboutDialog();
     void renderMainMenuBar();
 
+    // Dialog rendering
+    void renderNewProjectDialog();
+    void renderOpenProjectDialog();
+    void renderOpenSceneDialog();
+    void renderAboutDialogContent();
+    void renderErrorDialog();
+    void showError(const std::string& message);
+
     EditorConfig m_config;
     bool m_initialized = false;
     bool m_running = false;
@@ -575,6 +583,19 @@ private:
 
     // Auto-save timer
     f64 m_autoSaveTimer = 0.0;
+
+    // Dialog state
+    bool m_showNewProjectDialog = false;
+    bool m_showOpenProjectDialog = false;
+    bool m_showOpenSceneDialog = false;
+    bool m_showAboutDialog = false;
+    bool m_showErrorDialog = false;
+    std::string m_errorDialogMessage;
+
+    // Dialog input buffers
+    char m_newProjectNameBuffer[256] = "";
+    char m_newProjectPathBuffer[512] = "";
+    char m_openFilePathBuffer[512] = "";
 };
 
 } // namespace NovelMind::editor

@@ -4,6 +4,7 @@
  */
 
 #include "NovelMind/editor/editor_app.hpp"
+#include "NovelMind/core/logger.hpp"
 #include <algorithm>
 #include <chrono>
 #include <filesystem>
@@ -2041,8 +2042,108 @@ void EditorApp::setupShortcuts()
 
 void EditorApp::processInput()
 {
-    // Process keyboard and mouse input
-    // Handle shortcuts
+#if defined(NOVELMIND_HAS_SDL2) && defined(NOVELMIND_HAS_IMGUI)
+    // Get ImGui IO
+    ImGuiIO& io = ImGui::GetIO();
+
+    // Don't process shortcuts when typing in text fields
+    if (io.WantTextInput) return;
+
+    // Ctrl modifier
+    bool ctrl = io.KeyCtrl;
+    bool shift = io.KeyShift;
+    bool alt = io.KeyAlt;
+
+    // File menu shortcuts
+    if (ctrl && shift && ImGui::IsKeyPressed(ImGuiKey_N))
+    {
+        // Ctrl+Shift+N: New Project
+        m_showNewProjectDialog = true;
+    }
+    else if (ctrl && !shift && ImGui::IsKeyPressed(ImGuiKey_N) && m_projectLoaded)
+    {
+        // Ctrl+N: New Scene
+        newScene();
+    }
+    else if (ctrl && ImGui::IsKeyPressed(ImGuiKey_O))
+    {
+        // Ctrl+O: Open Project
+        m_showOpenProjectDialog = true;
+    }
+    else if (ctrl && ImGui::IsKeyPressed(ImGuiKey_S) && m_projectLoaded)
+    {
+        // Ctrl+S: Save Project
+        auto result = saveProject();
+        if (!result.isOk())
+        {
+            showError("Failed to save project: " + result.error());
+        }
+    }
+
+    // Edit menu shortcuts
+    if (ctrl && ImGui::IsKeyPressed(ImGuiKey_Z))
+    {
+        // Ctrl+Z: Undo
+        undo();
+    }
+    else if (ctrl && ImGui::IsKeyPressed(ImGuiKey_Y))
+    {
+        // Ctrl+Y: Redo
+        redo();
+    }
+    else if (ctrl && ImGui::IsKeyPressed(ImGuiKey_X))
+    {
+        // Ctrl+X: Cut
+        cut();
+    }
+    else if (ctrl && ImGui::IsKeyPressed(ImGuiKey_C))
+    {
+        // Ctrl+C: Copy
+        copy();
+    }
+    else if (ctrl && ImGui::IsKeyPressed(ImGuiKey_V))
+    {
+        // Ctrl+V: Paste
+        paste();
+    }
+    else if (ImGui::IsKeyPressed(ImGuiKey_Delete))
+    {
+        // Del: Delete
+        deleteSelection();
+    }
+    else if (ctrl && ImGui::IsKeyPressed(ImGuiKey_A))
+    {
+        // Ctrl+A: Select All
+        selectAll();
+    }
+
+    // Build menu shortcuts
+    if (ImGui::IsKeyPressed(ImGuiKey_F7) && m_projectLoaded)
+    {
+        // F7: Quick Build
+        auto result = quickBuild();
+        if (!result.isOk())
+        {
+            showError("Build failed: " + result.error());
+        }
+    }
+
+    // Play menu shortcuts
+    if (ImGui::IsKeyPressed(ImGuiKey_F5) && m_projectLoaded)
+    {
+        // F5: Play
+        bool isPlaying = m_previewWindow && m_previewWindow->isPreviewRunning();
+        if (!isPlaying)
+        {
+            startPreview();
+        }
+        else if (shift)
+        {
+            // Shift+F5: Stop
+            stopPreview();
+        }
+    }
+#endif
 }
 
 void EditorApp::update(f64 deltaTime)
@@ -2072,6 +2173,13 @@ void EditorApp::render()
     // Render UI overlays
     // Note: UIManager::render() requires a renderer - this is a stub for now
     // if (m_uiManager) m_uiManager->render(renderer);
+
+    // Render dialogs
+    renderNewProjectDialog();
+    renderOpenProjectDialog();
+    renderOpenSceneDialog();
+    renderAboutDialogContent();
+    renderErrorDialog();
 }
 
 void EditorApp::handleFileDropped(const std::string& path)
@@ -2103,11 +2211,11 @@ void EditorApp::renderMainMenuBar()
         {
             if (ImGui::MenuItem("New Project", "Ctrl+Shift+N"))
             {
-                // Show new project dialog
+                m_showNewProjectDialog = true;
             }
             if (ImGui::MenuItem("Open Project...", "Ctrl+O"))
             {
-                // Show open project dialog
+                m_showOpenProjectDialog = true;
             }
             if (ImGui::MenuItem("Save Project", "Ctrl+S", false, m_projectLoaded))
             {
@@ -2120,7 +2228,7 @@ void EditorApp::renderMainMenuBar()
             }
             if (ImGui::MenuItem("Open Scene...", nullptr, false, m_projectLoaded))
             {
-                // Show open scene dialog
+                m_showOpenSceneDialog = true;
             }
             if (ImGui::MenuItem("Save Scene", nullptr, false, m_projectLoaded))
             {
@@ -2239,7 +2347,7 @@ void EditorApp::renderMainMenuBar()
             }
             if (ImGui::MenuItem("About NovelMind"))
             {
-                showAboutDialog();
+                m_showAboutDialog = true;
             }
             ImGui::EndMenu();
         }
@@ -2247,6 +2355,293 @@ void EditorApp::renderMainMenuBar()
         ImGui::EndMenuBar();
     }
 #endif
+}
+
+void EditorApp::renderNewProjectDialog()
+{
+#if defined(NOVELMIND_HAS_SDL2) && defined(NOVELMIND_HAS_IMGUI)
+    if (!m_showNewProjectDialog) return;
+
+    ImGui::OpenPopup("New Project");
+
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    ImGui::SetNextWindowSize(ImVec2(500, 200), ImGuiCond_Appearing);
+
+    if (ImGui::BeginPopupModal("New Project", &m_showNewProjectDialog, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::Text("Create a new NovelMind project");
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        ImGui::Text("Project Name:");
+        ImGui::SameLine();
+        ImGui::InputText("##projectname", m_newProjectNameBuffer, sizeof(m_newProjectNameBuffer));
+
+        ImGui::Text("Project Path:");
+        ImGui::SameLine();
+        ImGui::InputText("##projectpath", m_newProjectPathBuffer, sizeof(m_newProjectPathBuffer));
+        ImGui::SameLine();
+        if (ImGui::Button("Browse..."))
+        {
+            // TODO: Open file browser dialog
+            // For now, show a message
+            showError("File browser not yet implemented. Please enter path manually.");
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        if (ImGui::Button("Create", ImVec2(120, 0)))
+        {
+            std::string name(m_newProjectNameBuffer);
+            std::string path(m_newProjectPathBuffer);
+
+            if (name.empty())
+            {
+                showError("Project name cannot be empty");
+            }
+            else if (path.empty())
+            {
+                showError("Project path cannot be empty");
+            }
+            else
+            {
+                auto result = newProject(path, name);
+                if (!result.isOk())
+                {
+                    showError("Failed to create project: " + result.error());
+                }
+                else
+                {
+                    m_showNewProjectDialog = false;
+                    // Clear buffers
+                    m_newProjectNameBuffer[0] = '\0';
+                    m_newProjectPathBuffer[0] = '\0';
+                }
+            }
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel", ImVec2(120, 0)))
+        {
+            m_showNewProjectDialog = false;
+        }
+
+        ImGui::EndPopup();
+    }
+#endif
+}
+
+void EditorApp::renderOpenProjectDialog()
+{
+#if defined(NOVELMIND_HAS_SDL2) && defined(NOVELMIND_HAS_IMGUI)
+    if (!m_showOpenProjectDialog) return;
+
+    ImGui::OpenPopup("Open Project");
+
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    ImGui::SetNextWindowSize(ImVec2(500, 150), ImGuiCond_Appearing);
+
+    if (ImGui::BeginPopupModal("Open Project", &m_showOpenProjectDialog, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::Text("Open an existing NovelMind project");
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        ImGui::Text("Project Path:");
+        ImGui::SameLine();
+        ImGui::InputText("##openprojectpath", m_openFilePathBuffer, sizeof(m_openFilePathBuffer));
+        ImGui::SameLine();
+        if (ImGui::Button("Browse..."))
+        {
+            // TODO: Open file browser dialog
+            showError("File browser not yet implemented. Please enter path manually.");
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        if (ImGui::Button("Open", ImVec2(120, 0)))
+        {
+            std::string path(m_openFilePathBuffer);
+
+            if (path.empty())
+            {
+                showError("Project path cannot be empty");
+            }
+            else
+            {
+                auto result = openProject(path);
+                if (!result.isOk())
+                {
+                    showError("Failed to open project: " + result.error());
+                }
+                else
+                {
+                    m_showOpenProjectDialog = false;
+                    m_openFilePathBuffer[0] = '\0';
+                }
+            }
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel", ImVec2(120, 0)))
+        {
+            m_showOpenProjectDialog = false;
+        }
+
+        ImGui::EndPopup();
+    }
+#endif
+}
+
+void EditorApp::renderOpenSceneDialog()
+{
+#if defined(NOVELMIND_HAS_SDL2) && defined(NOVELMIND_HAS_IMGUI)
+    if (!m_showOpenSceneDialog) return;
+
+    ImGui::OpenPopup("Open Scene");
+
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    ImGui::SetNextWindowSize(ImVec2(500, 150), ImGuiCond_Appearing);
+
+    if (ImGui::BeginPopupModal("Open Scene", &m_showOpenSceneDialog, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::Text("Open a scene file");
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        ImGui::Text("Scene Path:");
+        ImGui::SameLine();
+        ImGui::InputText("##openscenepath", m_openFilePathBuffer, sizeof(m_openFilePathBuffer));
+        ImGui::SameLine();
+        if (ImGui::Button("Browse..."))
+        {
+            // TODO: Open file browser dialog
+            showError("File browser not yet implemented. Please enter path manually.");
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        if (ImGui::Button("Open", ImVec2(120, 0)))
+        {
+            std::string path(m_openFilePathBuffer);
+
+            if (path.empty())
+            {
+                showError("Scene path cannot be empty");
+            }
+            else
+            {
+                auto result = openScene(path);
+                if (!result.isOk())
+                {
+                    showError("Failed to open scene: " + result.error());
+                }
+                else
+                {
+                    m_showOpenSceneDialog = false;
+                    m_openFilePathBuffer[0] = '\0';
+                }
+            }
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel", ImVec2(120, 0)))
+        {
+            m_showOpenSceneDialog = false;
+        }
+
+        ImGui::EndPopup();
+    }
+#endif
+}
+
+void EditorApp::renderAboutDialogContent()
+{
+#if defined(NOVELMIND_HAS_SDL2) && defined(NOVELMIND_HAS_IMGUI)
+    if (!m_showAboutDialog) return;
+
+    ImGui::OpenPopup("About NovelMind");
+
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_Appearing);
+
+    if (ImGui::BeginPopupModal("About NovelMind", &m_showAboutDialog, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::Text("NovelMind Editor");
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        ImGui::Text("Version: 0.2.0 Alpha");
+        ImGui::Text("Build: C++20");
+        ImGui::Spacing();
+
+        ImGui::TextWrapped("A professional editor and engine for creating visual novels with emphasis on convenience, stability, and resource protection.");
+        ImGui::Spacing();
+
+        ImGui::Text("Features:");
+        ImGui::BulletText("Visual scene editing");
+        ImGui::BulletText("Node-based story graph");
+        ImGui::BulletText("Timeline editor");
+        ImGui::BulletText("Asset management");
+        ImGui::BulletText("Localization support");
+        ImGui::BulletText("Voice-over system");
+        ImGui::Spacing();
+
+        ImGui::Separator();
+        ImGui::Text("Copyright (c) 2024 NovelMind Contributors");
+        ImGui::Text("Licensed under MIT License");
+        ImGui::Spacing();
+
+        if (ImGui::Button("OK", ImVec2(120, 0)))
+        {
+            m_showAboutDialog = false;
+        }
+
+        ImGui::EndPopup();
+    }
+#endif
+}
+
+void EditorApp::renderErrorDialog()
+{
+#if defined(NOVELMIND_HAS_SDL2) && defined(NOVELMIND_HAS_IMGUI)
+    if (!m_showErrorDialog) return;
+
+    ImGui::OpenPopup("Error");
+
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+    if (ImGui::BeginPopupModal("Error", &m_showErrorDialog, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::TextWrapped("%s", m_errorDialogMessage.c_str());
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        if (ImGui::Button("OK", ImVec2(120, 0)))
+        {
+            m_showErrorDialog = false;
+            m_errorDialogMessage.clear();
+        }
+
+        ImGui::EndPopup();
+    }
+#endif
+}
+
+void EditorApp::showError(const std::string& message)
+{
+    m_errorDialogMessage = message;
+    m_showErrorDialog = true;
+    NovelMind::core::Logger::instance().error(message);
 }
 
 } // namespace NovelMind::editor
