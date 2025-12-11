@@ -940,3 +940,509 @@ TEST_CASE("TimelinePanel - Frame rate", "[gui][timeline]")
     panel.setFrameRate(60.0);
     CHECK(panel.getFrameRate() == 60.0);
 }
+
+// =============================================================================
+// Extended GUI Tests - StoryGraph Operations
+// =============================================================================
+
+TEST_CASE("StoryGraphPanel - Node creation coordinates", "[gui][story_graph][extended]")
+{
+    StoryGraphPanel panel;
+
+    // Verify node creation at specific coordinates doesn't crash
+    // (actual node creation requires an active graph)
+    CHECK(panel.getActiveGraph() == nullptr);
+
+    // Setting coordinates for view
+    panel.setViewOffset(100.0f, 200.0f);
+    auto [x, y] = panel.getViewOffset();
+    CHECK(x == 100.0f);
+    CHECK(y == 200.0f);
+}
+
+TEST_CASE("StoryGraphPanel - Zoom limits", "[gui][story_graph][extended]")
+{
+    StoryGraphPanel panel;
+
+    // Test zoom clamping at minimum
+    panel.setZoom(0.01f);
+    CHECK(panel.getZoom() >= 0.1f);
+
+    // Test zoom clamping at maximum
+    panel.setZoom(10.0f);
+    CHECK(panel.getZoom() <= 4.0f);
+
+    // Test normal zoom values
+    panel.setZoom(0.5f);
+    CHECK(panel.getZoom() == 0.5f);
+
+    panel.setZoom(2.0f);
+    CHECK(panel.getZoom() == 2.0f);
+}
+
+TEST_CASE("StoryGraphPanel - Search functionality", "[gui][story_graph][extended]")
+{
+    StoryGraphPanel panel;
+
+    // Search with no graph should return empty
+    auto results = panel.searchNodes("test");
+    CHECK(results.empty());
+
+    // Clear highlight shouldn't crash
+    panel.clearSearchHighlight();
+    CHECK(panel.getValidationErrors().empty());
+}
+
+TEST_CASE("StoryGraphPanel - View operations", "[gui][story_graph][extended]")
+{
+    StoryGraphPanel panel;
+
+    // Frame all and frame selection without graph
+    panel.frameAll();
+    panel.frameSelection();
+
+    // Should not crash and zoom should remain valid
+    CHECK(panel.getZoom() >= 0.1f);
+    CHECK(panel.getZoom() <= 4.0f);
+}
+
+// =============================================================================
+// Extended GUI Tests - Timeline Operations
+// =============================================================================
+
+TEST_CASE("TimelinePanel - Scrubbing simulation", "[gui][timeline][extended]")
+{
+    TimelinePanel panel;
+
+    // Set up timeline
+    panel.setDuration(60.0);
+    panel.setFrameRate(30.0);
+
+    // Scrub to different positions
+    panel.setCurrentTime(0.0);
+    CHECK(panel.getCurrentTime() == 0.0);
+
+    panel.setCurrentTime(30.0);
+    CHECK(panel.getCurrentTime() == 30.0);
+
+    panel.setCurrentTime(60.0);
+    CHECK(panel.getCurrentTime() == 60.0);
+}
+
+TEST_CASE("TimelinePanel - Zoom and scroll operations", "[gui][timeline][extended]")
+{
+    TimelinePanel panel;
+
+    // Test zoom levels
+    panel.setZoom(0.5f);
+    CHECK(panel.getZoom() == 0.5f);
+
+    panel.setZoom(4.0f);
+    CHECK(panel.getZoom() == 4.0f);
+
+    // Test scroll positions
+    panel.setScrollX(0.0f);
+    CHECK(panel.getScrollX() == 0.0f);
+
+    panel.setScrollX(500.0f);
+    CHECK(panel.getScrollX() == 500.0f);
+}
+
+// =============================================================================
+// Extended GUI Tests - SceneView Operations
+// =============================================================================
+
+TEST_CASE("SceneViewPanel - Gizmo mode switching", "[gui][scene_view][extended]")
+{
+    SceneViewPanel panel;
+
+    // Test all gizmo modes
+    panel.setGizmoMode(GizmoMode::Translate);
+    CHECK(panel.getGizmoMode() == GizmoMode::Translate);
+
+    panel.setGizmoMode(GizmoMode::Rotate);
+    CHECK(panel.getGizmoMode() == GizmoMode::Rotate);
+
+    panel.setGizmoMode(GizmoMode::Scale);
+    CHECK(panel.getGizmoMode() == GizmoMode::Scale);
+}
+
+TEST_CASE("SceneViewPanel - Grid size configuration", "[gui][scene_view][extended]")
+{
+    SceneViewPanel panel;
+
+    // Default grid size
+    panel.setGridSize(10.0f);
+    CHECK(panel.getGridSize() == 10.0f);
+
+    panel.setGridSize(50.0f);
+    CHECK(panel.getGridSize() == 50.0f);
+}
+
+TEST_CASE("SceneViewPanel - Snapping precision", "[gui][scene_view][extended]")
+{
+    SceneViewPanel panel;
+
+    // Enable snapping
+    panel.setSnappingEnabled(true);
+    CHECK(panel.isSnappingEnabled());
+
+    // Set various snap increments
+    panel.setSnapIncrement(1.0f);
+    CHECK(panel.getSnapIncrement() == 1.0f);
+
+    panel.setSnapIncrement(0.5f);
+    CHECK(panel.getSnapIncrement() == 0.5f);
+
+    panel.setSnapIncrement(25.0f);
+    CHECK(panel.getSnapIncrement() == 25.0f);
+}
+
+TEST_CASE("SceneViewPanel - View manipulation", "[gui][scene_view][extended]")
+{
+    SceneViewPanel panel;
+
+    // Test zoom manipulation
+    panel.setZoom(0.25f);
+    CHECK(panel.getZoom() == 0.25f);
+
+    panel.setZoom(4.0f);
+    CHECK(panel.getZoom() == 4.0f);
+
+    // Test pan offset
+    panel.setPanOffset(-500.0f, -500.0f);
+    auto [px, py] = panel.getPanOffset();
+    CHECK(px == -500.0f);
+    CHECK(py == -500.0f);
+
+    // Reset and verify
+    panel.resetView();
+    auto [rx, ry] = panel.getPanOffset();
+    CHECK(rx == 0.0f);
+    CHECK(ry == 0.0f);
+}
+
+// =============================================================================
+// Extended GUI Tests - Hierarchy Panel Operations
+// =============================================================================
+
+TEST_CASE("HierarchyPanel - Selection management", "[gui][hierarchy][extended]")
+{
+    HierarchyPanel panel;
+
+    // Initial state - no selection
+    auto selected = panel.getSelectedObjects();
+    CHECK(selected.empty());
+
+    // Clear selection shouldn't crash
+    panel.clearSelection();
+    CHECK(panel.getSelectedObjects().empty());
+}
+
+TEST_CASE("HierarchyPanel - Search and filter", "[gui][hierarchy][extended]")
+{
+    HierarchyPanel panel;
+
+    // Set filter
+    panel.setFilter("test");
+    CHECK(panel.getFilter() == "test");
+
+    panel.setFilter("");
+    CHECK(panel.getFilter().empty());
+}
+
+// =============================================================================
+// Extended GUI Tests - Asset Browser Operations
+// =============================================================================
+
+TEST_CASE("AssetBrowserPanel - Navigation history", "[gui][asset_browser][extended]")
+{
+    AssetBrowserPanel panel;
+
+    // Initial state
+    CHECK(!panel.canNavigateBack());
+    CHECK(!panel.canNavigateForward());
+}
+
+TEST_CASE("AssetBrowserPanel - Thumbnail size configuration", "[gui][asset_browser][extended]")
+{
+    AssetBrowserPanel panel;
+
+    // Test thumbnail size setting
+    panel.setThumbnailSize(64.0f);
+    CHECK(panel.getThumbnailSize() == 64.0f);
+
+    panel.setThumbnailSize(128.0f);
+    CHECK(panel.getThumbnailSize() == 128.0f);
+
+    panel.setThumbnailSize(256.0f);
+    CHECK(panel.getThumbnailSize() == 256.0f);
+}
+
+TEST_CASE("AssetBrowserPanel - Selection operations", "[gui][asset_browser][extended]")
+{
+    AssetBrowserPanel panel;
+
+    // Clear selection
+    panel.clearSelection();
+    CHECK(panel.getSelectedAssets().empty());
+}
+
+// =============================================================================
+// Extended GUI Tests - Build Settings Panel Operations
+// =============================================================================
+
+TEST_CASE("BuildSettingsPanel - Preset management", "[gui][build_settings][extended]")
+{
+    BuildSettingsPanel panel;
+
+    // Save a custom preset
+    panel.savePreset("TestPreset", "Test preset for unit tests");
+
+    // Load the preset
+    panel.loadPreset("TestPreset");
+
+    // Delete the preset (cleanup)
+    panel.deletePreset("TestPreset");
+}
+
+TEST_CASE("BuildSettingsPanel - Build operations", "[gui][build_settings][extended]")
+{
+    BuildSettingsPanel panel;
+
+    // Initial state - not building
+    CHECK(!panel.isBuilding());
+
+    // Start and cancel build
+    panel.startBuild();
+    CHECK(panel.isBuilding());
+
+    panel.cancelBuild();
+    // Build cancellation is async, so we don't check immediately
+}
+
+TEST_CASE("BuildSettingsPanel - Size estimation", "[gui][build_settings][extended]")
+{
+    BuildSettingsPanel panel;
+
+    // Trigger size estimation
+    panel.estimateBuildSize();
+
+    // Should have an estimated size > 0
+    CHECK(panel.getEstimatedSize() > 0);
+}
+
+// =============================================================================
+// Extended GUI Tests - Play Mode Controller
+// =============================================================================
+
+TEST_CASE("PlayModeController - Breakpoint management", "[gui][play_mode][extended]")
+{
+    auto& controller = PlayModeController::instance();
+
+    // Clear any existing breakpoints
+    controller.clearAllBreakpoints();
+    CHECK(controller.getBreakpoints().empty());
+
+    // Add a breakpoint
+    controller.addBreakpoint("test_node_1", "");
+    auto breakpoints = controller.getBreakpoints();
+    CHECK(breakpoints.size() == 1);
+
+    // Toggle breakpoint (should remove it)
+    controller.toggleBreakpoint("test_node_1");
+    breakpoints = controller.getBreakpoints();
+    CHECK(breakpoints.empty());
+
+    // Add and remove explicitly
+    controller.addBreakpoint("test_node_2", "");
+    auto bp = controller.getBreakpointForNode("test_node_2");
+    CHECK(bp.has_value());
+
+    controller.removeBreakpoint(bp->id);
+    CHECK(!controller.getBreakpointForNode("test_node_2").has_value());
+}
+
+TEST_CASE("PlayModeController - Time scale", "[gui][play_mode][extended]")
+{
+    auto& controller = PlayModeController::instance();
+
+    // Set various time scales
+    controller.setTimeScale(0.5);
+    CHECK(controller.getTimeScale() == 0.5);
+
+    controller.setTimeScale(2.0);
+    CHECK(controller.getTimeScale() == 2.0);
+
+    // Reset to normal
+    controller.setTimeScale(1.0);
+    CHECK(controller.getTimeScale() == 1.0);
+}
+
+// =============================================================================
+// Extended GUI Tests - Console Panel Operations
+// =============================================================================
+
+TEST_CASE("ConsolePanel - Message management", "[gui][console][extended]")
+{
+    ConsolePanel panel;
+
+    // Log messages at different levels
+    panel.log("Test info message", LogSeverity::Info);
+    panel.log("Test warning message", LogSeverity::Warning);
+    panel.log("Test error message", LogSeverity::Error);
+
+    // Message counts should reflect logged messages
+    CHECK(panel.getInfoCount() == 1);
+    CHECK(panel.getWarningCount() == 1);
+    CHECK(panel.getErrorCount() == 1);
+
+    // Clear and verify
+    panel.clear();
+    CHECK(panel.getInfoCount() == 0);
+    CHECK(panel.getWarningCount() == 0);
+    CHECK(panel.getErrorCount() == 0);
+}
+
+TEST_CASE("ConsolePanel - Filter settings", "[gui][console][extended]")
+{
+    ConsolePanel panel;
+
+    // Add messages
+    panel.log("Info", LogSeverity::Info);
+    panel.log("Warning", LogSeverity::Warning);
+    panel.log("Error", LogSeverity::Error);
+
+    // Test filter settings - set and verify filters work
+    panel.setShowInfo(true);
+    panel.setShowWarnings(true);
+    panel.setShowErrors(true);
+
+    // Disable filters individually
+    panel.setShowInfo(false);
+    panel.setShowWarnings(false);
+    panel.setShowErrors(false);
+
+    // Re-enable
+    panel.setShowInfo(true);
+    panel.setShowWarnings(true);
+    panel.setShowErrors(true);
+}
+
+// =============================================================================
+// Extended GUI Tests - Event Bus Integration
+// =============================================================================
+
+TEST_CASE("EventBus - Event subscription and unsubscription", "[gui][event_bus][extended]")
+{
+    auto& eventBus = EventBus::instance();
+
+    bool eventReceived = false;
+
+    // Subscribe to an event
+    auto subscription = eventBus.subscribe<SelectionChangedEvent>(
+        [&eventReceived](const SelectionChangedEvent& /*event*/) {
+            eventReceived = true;
+        });
+
+    // Publish event
+    SelectionChangedEvent event;
+    eventBus.publish(event);
+    CHECK(eventReceived);
+
+    // Unsubscribe
+    eventBus.unsubscribe(subscription);
+
+    // Reset and publish again
+    eventReceived = false;
+    eventBus.publish(event);
+    CHECK(!eventReceived);
+}
+
+// =============================================================================
+// Extended GUI Tests - Selection System
+// =============================================================================
+
+TEST_CASE("EditorSelectionManager - Multi-selection", "[gui][selection][extended]")
+{
+    auto& selection = EditorSelectionManager::instance();
+
+    // Clear selection
+    selection.clearSelection();
+    CHECK(!selection.hasSelection());
+    CHECK(selection.getSelectionCount() == 0);
+
+    // Select scene objects
+    selection.selectObject("object_1");
+    CHECK(selection.getSelectionCount() == 1);
+
+    selection.addToSelection(SelectionItem(ObjectId("object_2")));
+    CHECK(selection.getSelectionCount() == 2);
+
+    selection.addToSelection(SelectionItem(ObjectId("object_3")));
+    CHECK(selection.getSelectionCount() == 3);
+
+    // Check if items are selected
+    CHECK(selection.isObjectSelected("object_1"));
+    CHECK(selection.isObjectSelected("object_2"));
+    CHECK(selection.isObjectSelected("object_3"));
+
+    // Remove from selection
+    selection.removeFromSelection(SelectionItem(ObjectId("object_2")));
+    CHECK(selection.getSelectionCount() == 2);
+    CHECK(!selection.isObjectSelected("object_2"));
+
+    // Clear all
+    selection.clearSelection();
+    CHECK(!selection.hasSelection());
+}
+
+// =============================================================================
+// Extended GUI Tests - HotKeys Manager
+// =============================================================================
+
+TEST_CASE("HotKeysManager - Command registration", "[gui][hotkeys][extended]")
+{
+    auto& hotkeys = HotkeysManager::instance();
+
+    bool actionExecuted = false;
+
+    // Register a custom command
+    ShortcutCommand testCmd;
+    testCmd.id = "test.action";
+    testCmd.displayName = "Test Action";
+    testCmd.description = "A test action for unit testing";
+    testCmd.category = ShortcutCategory::Custom;
+    testCmd.context = ShortcutContext::Global;
+    testCmd.defaultBinding = Shortcut(KeyCode::T, Modifiers::Ctrl);
+    testCmd.action = [&actionExecuted]() { actionExecuted = true; };
+
+    hotkeys.registerCommand(testCmd);
+
+    // Check command exists
+    CHECK(hotkeys.hasCommand("test.action"));
+
+    // Get the binding
+    auto binding = hotkeys.getBinding("test.action");
+    CHECK(binding.key == KeyCode::T);
+
+    // Unregister
+    hotkeys.unregisterCommand("test.action");
+    CHECK(!hotkeys.hasCommand("test.action"));
+}
+
+TEST_CASE("HotKeysManager - Standard commands registered", "[gui][hotkeys][extended]")
+{
+    auto& hotkeys = HotkeysManager::instance();
+
+    // Register standard commands if not already done
+    hotkeys.registerStandardCommands();
+
+    // Verify common commands are registered using the Commands namespace IDs
+    CHECK(hotkeys.hasCommand(Commands::EditUndo));
+    CHECK(hotkeys.hasCommand(Commands::EditRedo));
+    CHECK(hotkeys.hasCommand(Commands::FileSave));
+    CHECK(hotkeys.hasCommand(Commands::EditCopy));
+    CHECK(hotkeys.hasCommand(Commands::EditPaste));
+    CHECK(hotkeys.hasCommand(Commands::EditDelete));
+}
