@@ -247,12 +247,12 @@ std::vector<MenuItem> BuildSettingsPanel::getMenuItems() const
     buildMenu.label = "Build";
     buildMenu.subItems = {
         {"Build", "Ctrl+B", [this]() { const_cast<BuildSettingsPanel*>(this)->startBuild(); },
-            [this]() { return !m_isBuilding; }},
+            [this]() { return !m_isBuilding; }, nullptr, false, {}},
         {"Build & Run", "Ctrl+F5", []() { /* Build and run */ },
-            [this]() { return !m_isBuilding; }},
+            [this]() { return !m_isBuilding; }, nullptr, false, {}},
         MenuItem::separator(),
         {"Clean Build", "", []() { /* Clean build */ },
-            [this]() { return !m_isBuilding; }},
+            [this]() { return !m_isBuilding; }, nullptr, false, {}},
     };
     items.push_back(buildMenu);
 
@@ -263,13 +263,13 @@ std::vector<MenuItem> BuildSettingsPanel::getMenuItems() const
     {
         std::string name = preset.name;
         presetsMenu.subItems.push_back({name, "",
-            [this, name]() { const_cast<BuildSettingsPanel*>(this)->loadPreset(name); }});
+            [this, name]() { const_cast<BuildSettingsPanel*>(this)->loadPreset(name); }, []() { return true; }, nullptr, false, {}});
     }
     if (!m_presets.empty())
     {
         presetsMenu.subItems.push_back(MenuItem::separator());
     }
-    presetsMenu.subItems.push_back({"Save Current as Preset...", "", []() { /* Save dialog */ }});
+    presetsMenu.subItems.push_back({"Save Current as Preset...", "", []() { /* Save dialog */ }, []() { return true; }, nullptr, false, {}});
     items.push_back(presetsMenu);
 
     return items;
