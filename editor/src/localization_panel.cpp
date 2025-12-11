@@ -292,6 +292,8 @@ void LocalizationPanel::renderStatusBadge(LocalizationStatus status)
     }
 
     // Render colored badge
+    (void)text;
+    (void)color;
 }
 
 void LocalizationPanel::renderCoverageStats()

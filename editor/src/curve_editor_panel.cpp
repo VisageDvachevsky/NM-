@@ -313,7 +313,6 @@ void CurveEditorPanel::renderCurveInfo()
         size_t idx = m_selectedPoints[0];
         const auto& points = m_curve->getPoints();
         if (idx < points.size()) {
-            const auto& pt = points[idx];
             // Show editable fields for time, value, handle positions
         }
     }

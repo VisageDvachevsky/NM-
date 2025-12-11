@@ -17,6 +17,7 @@
 #include <vector>
 #include <functional>
 #include <variant>
+#include <utility>
 
 namespace NovelMind::editor {
 
@@ -40,12 +41,35 @@ enum class PropertyType : u8 {
  * @brief Property definition
  */
 struct PropertyDefinition {
+    PropertyDefinition(std::string nameValue = {},
+                       std::string displayNameValue = {},
+                       std::string categoryValue = {},
+                       std::string tooltipValue = {},
+                       PropertyType typeValue = PropertyType::String,
+                       bool readOnlyValue = false,
+                       std::vector<std::string> enumValuesValue = {},
+                       std::string assetTypeValue = {},
+                       f32 minValueValue = 0.0f,
+                       f32 maxValueValue = 1.0f,
+                       f32 stepValue = 0.1f)
+        : name(std::move(nameValue)),
+          displayName(std::move(displayNameValue)),
+          category(std::move(categoryValue)),
+          tooltip(std::move(tooltipValue)),
+          type(typeValue),
+          readOnly(readOnlyValue),
+          enumValues(std::move(enumValuesValue)),
+          assetType(std::move(assetTypeValue)),
+          minValue(minValueValue),
+          maxValue(maxValueValue),
+          step(stepValue) {}
+
     std::string name;
     std::string displayName;
     std::string category;
     std::string tooltip;
-    PropertyType type = PropertyType::String;
-    bool readOnly = false;
+    PropertyType type;
+    bool readOnly;
 
     // For enum types
     std::vector<std::string> enumValues;
@@ -54,9 +78,9 @@ struct PropertyDefinition {
     std::string assetType;
 
     // For numeric types
-    f32 minValue = 0.0f;
-    f32 maxValue = 1.0f;
-    f32 step = 0.1f;
+    f32 minValue;
+    f32 maxValue;
+    f32 step;
 };
 
 /**

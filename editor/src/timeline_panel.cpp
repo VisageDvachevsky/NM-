@@ -536,7 +536,10 @@ void TimelinePanel::onRender()
 
     // Time display at top
     ImGui::Text("Time: %.2f / %.2f  |  FPS: %.0f  |  Speed: %.1fx",
-                m_currentTime, m_duration, m_fps, m_playbackSpeed);
+                m_currentTime,
+                m_duration,
+                static_cast<double>(m_fps),
+                static_cast<double>(m_playbackSpeed));
     ImGui::Separator();
 
     // Split into header and content regions
@@ -739,7 +742,7 @@ void TimelinePanel::renderTrackHeaders()
         ImGui::PopID();
 
         // Add spacing to match track height
-        if (ImGui::GetCursorPosY() < m_trackHeight * (i + 1))
+        if (ImGui::GetCursorPosY() < m_trackHeight * static_cast<f32>(i + 1))
         {
             ImGui::Dummy(ImVec2(0, m_trackHeight - 22)); // Adjust for row height
         }
@@ -1114,8 +1117,8 @@ void TimelinePanel::renderCurveEditor()
             // Grid
             for (int i = 0; i <= 10; ++i)
             {
-                f32 x = canvasPos.x + (canvasSize.x * i / 10.0f);
-                f32 y = canvasPos.y + (canvasSize.y * i / 10.0f);
+                f32 x = canvasPos.x + (canvasSize.x * static_cast<f32>(i) / 10.0f);
+                f32 y = canvasPos.y + (canvasSize.y * static_cast<f32>(i) / 10.0f);
                 ImU32 gridColor = (i == 5) ? IM_COL32(80, 80, 80, 255) : IM_COL32(50, 50, 50, 255);
                 drawList->AddLine(ImVec2(x, canvasPos.y), ImVec2(x, canvasPos.y + canvasSize.y), gridColor);
                 drawList->AddLine(ImVec2(canvasPos.x, y), ImVec2(canvasPos.x + canvasSize.x, y), gridColor);
@@ -1229,7 +1232,8 @@ void TimelinePanel::handleMouseInput()
         ImVec2 delta = ImGui::GetMouseDragDelta(2);
         ImGui::ResetMouseDragDelta(2);
 
-        f64 timeDelta = (delta.x / m_contentWidth) * (m_viewEndTime - m_viewStartTime);
+        const f64 timeDelta =
+            (static_cast<f64>(delta.x) / static_cast<f64>(m_contentWidth)) * (m_viewEndTime - m_viewStartTime);
         m_viewStartTime -= timeDelta;
         m_viewEndTime -= timeDelta;
 
@@ -1253,7 +1257,7 @@ void TimelinePanel::handleMouseInput()
     f32 wheel = ImGui::GetIO().MouseWheel;
     if (std::abs(wheel) > 0.0f && ImGui::IsWindowHovered())
     {
-        f64 zoomFactor = 1.0 + wheel * 0.1;
+        f64 zoomFactor = 1.0 + static_cast<f64>(wheel) * 0.1;
         f64 mousePosTime = pixelToTime(relX);
 
         // Zoom around mouse position

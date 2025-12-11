@@ -14,6 +14,24 @@ namespace NovelMind::vfs
 {
 
 namespace fs = std::filesystem;
+namespace {
+
+bool readFileToString(std::ifstream& file, std::string& out)
+{
+    file.seekg(0, std::ios::end);
+    const std::streampos size = file.tellg();
+    if (size < 0)
+    {
+        return false;
+    }
+
+    out.resize(static_cast<size_t>(size));
+    file.seekg(0, std::ios::beg);
+    file.read(out.data(), static_cast<std::streamsize>(out.size()));
+    return static_cast<bool>(file);
+}
+
+} // namespace
 
 // Priority base values for each pack type
 constexpr i32 PRIORITY_BASE = 1000;
@@ -646,8 +664,11 @@ Result<void> MultiPackManager::loadModConfig(const std::string& path)
         return Result<void>::error("Failed to open file for reading: " + path);
     }
 
-    std::string content((std::istreambuf_iterator<char>(file)),
-                        std::istreambuf_iterator<char>());
+    std::string content;
+    if (!readFileToString(file, content))
+    {
+        return Result<void>::error("Failed to read file: " + path);
+    }
 
     // Parse mod load order
     std::string loadOrderPattern = "\"modLoadOrder\"\\s*:\\s*\\[([^\\]]*)\\]";

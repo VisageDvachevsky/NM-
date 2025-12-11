@@ -789,9 +789,10 @@ void SceneViewPanel::renderOverlays()
 
     // Draw zoom indicator (top-right corner)
     char zoomText[32];
-    snprintf(zoomText, sizeof(zoomText), "%.0f%%", m_zoom * 100.0f);
+    snprintf(zoomText, sizeof(zoomText), "%.0f%%", static_cast<double>(m_zoom * 100.0f));
     ImVec2 textSize = ImGui::CalcTextSize(zoomText);
-    ImVec2 zoomPos(windowPos.x + windowSize.x - textSize.x - 15, windowPos.y + ImGui::GetFrameHeight() + 10);
+    ImVec2 zoomPos(windowPos.x + windowSize.x - textSize.x - 15.0f,
+                   windowPos.y + ImGui::GetFrameHeight() + 10.0f);
 
     // Draw background for zoom text
     drawList->AddRectFilled(
@@ -805,10 +806,11 @@ void SceneViewPanel::renderOverlays()
     {
         auto [sceneX, sceneY] = screenToScene(m_lastMouseX, m_lastMouseY);
         char coordText[64];
-        snprintf(coordText, sizeof(coordText), "X: %.1f Y: %.1f", sceneX, sceneY);
+        snprintf(coordText, sizeof(coordText), "X: %.1f Y: %.1f",
+                 static_cast<double>(sceneX), static_cast<double>(sceneY));
 
         ImVec2 coordTextSize = ImGui::CalcTextSize(coordText);
-        ImVec2 coordPos(windowPos.x + 10, windowPos.y + windowSize.y - coordTextSize.y - 10);
+        ImVec2 coordPos(windowPos.x + 10.0f, windowPos.y + windowSize.y - coordTextSize.y - 10.0f);
 
         // Draw background for coordinate text
         drawList->AddRectFilled(
@@ -832,8 +834,8 @@ void SceneViewPanel::renderOverlays()
     if (toolName[0] != '\0')
     {
         ImVec2 toolTextSize = ImGui::CalcTextSize(toolName);
-        ImVec2 toolPos(windowPos.x + windowSize.x - toolTextSize.x - 15,
-                       windowPos.y + windowSize.y - toolTextSize.y - 10);
+        ImVec2 toolPos(windowPos.x + windowSize.x - toolTextSize.x - 15.0f,
+                       windowPos.y + windowSize.y - toolTextSize.y - 10.0f);
 
         // Draw background
         drawList->AddRectFilled(
@@ -849,7 +851,8 @@ void SceneViewPanel::renderOverlays()
         char statusText[64] = "";
         if (m_showGrid && m_snapEnabled)
         {
-            snprintf(statusText, sizeof(statusText), "Grid: ON | Snap: ON (%.0f)", m_snapIncrement);
+            snprintf(statusText, sizeof(statusText), "Grid: ON | Snap: ON (%.0f)",
+                     static_cast<double>(m_snapIncrement));
         }
         else if (m_showGrid)
         {
@@ -857,13 +860,13 @@ void SceneViewPanel::renderOverlays()
         }
         else if (m_snapEnabled)
         {
-            snprintf(statusText, sizeof(statusText), "Snap: ON (%.0f)", m_snapIncrement);
+            snprintf(statusText, sizeof(statusText), "Snap: ON (%.0f)", static_cast<double>(m_snapIncrement));
         }
 
         if (statusText[0] != '\0')
         {
             ImVec2 statusSize = ImGui::CalcTextSize(statusText);
-            ImVec2 statusPos(windowPos.x + 10, windowPos.y + ImGui::GetFrameHeight() + 10);
+            ImVec2 statusPos(windowPos.x + 10.0f, windowPos.y + ImGui::GetFrameHeight() + 10.0f);
 
             drawList->AddRectFilled(
                 ImVec2(statusPos.x - 5, statusPos.y - 2),

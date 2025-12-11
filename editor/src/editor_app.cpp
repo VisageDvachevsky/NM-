@@ -45,12 +45,47 @@ void ProjectBrowser::render()
 {
     if (!m_visible) return;
 
-    // Render file tree
-    for ([[maybe_unused]] const auto& entry : m_entries)
+#if defined(NOVELMIND_HAS_SDL2) && defined(NOVELMIND_HAS_IMGUI)
+    bool open = m_visible;
+    if (ImGui::Begin(m_title.c_str(), &open))
     {
-        // Render entry based on type
-        // This would use the UI framework to render tree items
+        if (m_rootPath.empty())
+        {
+            ImGui::TextDisabled("Проект не открыт. Файл -> New/Open.");
+        }
+        else
+        {
+            ImGui::Text("Root: %s", m_rootPath.c_str());
+            ImGui::Separator();
+
+            for (const auto& entry : m_entries)
+            {
+                bool isDir = entry.type == AssetEntry::Type::Folder;
+                std::string label = std::string(isDir ? "[dir] " : "[file] ") + entry.name;
+
+                if (ImGui::Selectable(label.c_str(), m_selectedPath == entry.path, ImGuiSelectableFlags_AllowDoubleClick))
+                {
+                    m_selectedPath = entry.path;
+                    if (m_onFileSelected) m_onFileSelected(entry.path);
+
+                    if (ImGui::IsMouseDoubleClicked(0))
+                    {
+                        if (isDir)
+                        {
+                            setRootPath(entry.path);
+                        }
+                        else if (m_onFileDoubleClicked)
+                        {
+                            m_onFileDoubleClicked(entry.path);
+                        }
+                    }
+                }
+            }
+        }
     }
+    m_visible = open;
+    ImGui::End();
+#endif
 }
 
 void ProjectBrowser::onResize(i32 width, i32 height)
@@ -176,10 +211,24 @@ void SceneView::render()
 {
     if (!m_visible) return;
 
+#if defined(NOVELMIND_HAS_SDL2) && defined(NOVELMIND_HAS_IMGUI)
+    bool open = m_visible;
+    if (ImGui::Begin(m_title.c_str(), &open))
+    {
+        const auto objectCount = m_sceneGraph ? m_sceneGraph->saveState().objects.size() : 0;
+        ImGui::Text("Scene view placeholder");
+        ImGui::TextDisabled("Objects in scene: %zu", objectCount);
+        ImGui::Separator();
+        ImGui::TextDisabled("Use File -> New Scene to start editing.");
+    }
+    m_visible = open;
+    ImGui::End();
+#else
     renderGrid();
     renderObjects();
     renderSelection();
     renderGizmos();
+#endif
 }
 
 void SceneView::onResize(i32 width, i32 height)
@@ -377,6 +426,20 @@ void StoryGraphView::render()
 {
     if (!m_visible) return;
 
+#if defined(NOVELMIND_HAS_SDL2) && defined(NOVELMIND_HAS_IMGUI)
+    bool open = m_visible;
+    if (ImGui::Begin(m_title.c_str(), &open))
+    {
+        const auto nodes = m_graph ? m_graph->getNodes().size() : 0;
+        const auto edges = m_graph ? m_graph->getEdges().size() : 0;
+        ImGui::Text("Story graph placeholder");
+        ImGui::TextDisabled("Nodes: %zu  |  Edges: %zu", nodes, edges);
+        ImGui::Separator();
+        ImGui::TextDisabled("Double-click a script in Project to load it.");
+    }
+    m_visible = open;
+    ImGui::End();
+#else
     renderConnections();
     renderNodes();
 
@@ -386,6 +449,7 @@ void StoryGraphView::render()
     }
 
     renderMinimap();
+#endif
 }
 
 void StoryGraphView::onResize(i32 width, i32 height)
@@ -683,6 +747,41 @@ void InspectorPanel::render()
 {
     if (!m_visible) return;
 
+#if defined(NOVELMIND_HAS_SDL2) && defined(NOVELMIND_HAS_IMGUI)
+    bool open = m_visible;
+    if (ImGui::Begin(m_title.c_str(), &open))
+    {
+        if (!m_currentObjectId.empty() && m_inspector)
+        {
+            ImGui::Text("Object: %s", m_currentObjectId.c_str());
+            ImGui::Separator();
+
+            auto props = m_inspector->getProperties(m_currentObjectId);
+            for (const auto& prop : props)
+            {
+                const std::string& label = prop.displayName.empty() ? prop.name : prop.displayName;
+                ImGui::Text("%s: %s", label.c_str(), prop.value.c_str());
+            }
+
+            if (props.empty())
+            {
+                ImGui::TextDisabled("Нет свойств для отображения.");
+            }
+        }
+        else if (m_currentNode)
+        {
+            ImGui::Text("Node id: %llu",
+                        static_cast<unsigned long long>(m_currentNode->id));
+            ImGui::Text("Type: %s", m_currentNode->type.c_str());
+        }
+        else
+        {
+            ImGui::TextDisabled("Ничего не выбрано.");
+        }
+    }
+    m_visible = open;
+    ImGui::End();
+#else
     if (!m_currentObjectId.empty() && m_inspector)
     {
         auto props = m_inspector->getProperties(m_currentObjectId);
@@ -721,6 +820,7 @@ void InspectorPanel::render()
     {
         // Show "Nothing selected" message
     }
+#endif
 }
 
 void InspectorPanel::onResize(i32 width, i32 height)
@@ -816,9 +916,55 @@ void AssetBrowser::render()
 {
     if (!m_visible) return;
 
-    // Render breadcrumbs
-    // Render assets in grid or list view
-    // This would use the UI framework
+#if defined(NOVELMIND_HAS_SDL2) && defined(NOVELMIND_HAS_IMGUI)
+    bool open = m_visible;
+    if (ImGui::Begin(m_title.c_str(), &open))
+    {
+        if (m_assetsPath.empty())
+        {
+            ImGui::TextDisabled("Assets path not set. Open a project first.");
+        }
+        else
+        {
+            ImGui::Text("Folder: %s", m_currentFolder.c_str());
+            ImGui::Separator();
+
+            if (m_assets.empty())
+            {
+                ImGui::TextDisabled("Папка пуста.");
+            }
+
+            for (auto& asset : m_assets)
+            {
+                const bool isDir = asset.type == AssetEntry::Type::Folder;
+                const std::string label = std::string(isDir ? "[dir] " : "[asset] ") + asset.name;
+
+                if (ImGui::Selectable(label.c_str(), asset.selected, ImGuiSelectableFlags_AllowDoubleClick))
+                {
+                    for (auto& other : m_assets) other.selected = false;
+                    asset.selected = true;
+
+                    if (m_onAssetSelected) m_onAssetSelected(asset);
+
+                    if (ImGui::IsMouseDoubleClicked(0))
+                    {
+                        if (isDir)
+                        {
+                            m_currentFolder = asset.path;
+                            refresh();
+                        }
+                        else if (m_onAssetDoubleClicked)
+                        {
+                            m_onAssetDoubleClicked(asset);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    m_visible = open;
+    ImGui::End();
+#endif
 }
 
 void AssetBrowser::onResize(i32 width, i32 height)
@@ -1029,6 +1175,16 @@ void PreviewWindow::render()
 {
     if (!m_visible) return;
 
+#if defined(NOVELMIND_HAS_SDL2) && defined(NOVELMIND_HAS_IMGUI)
+    bool open = m_visible;
+    if (ImGui::Begin(m_title.c_str(), &open))
+    {
+        ImGui::Text("Preview status: %s", m_running ? (m_paused ? "Paused" : "Running") : "Stopped");
+        ImGui::TextDisabled("Use Play menu to start/stop preview.");
+    }
+    m_visible = open;
+    ImGui::End();
+#else
     // Render preview
     // Note: Actual rendering requires a renderer backend.
     // This is a stub for the preview window - rendering will be
@@ -1038,6 +1194,7 @@ void PreviewWindow::render()
         // Scene rendering is delegated to the preview backend when attached.
         // The sceneGraph->render() call requires an active renderer context.
     }
+#endif
 }
 
 void PreviewWindow::onResize(i32 width, i32 height)

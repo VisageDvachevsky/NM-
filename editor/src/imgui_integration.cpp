@@ -14,8 +14,17 @@
 // When ImGui is available (NOVELMIND_HAS_IMGUI), real implementation is used.
 
 #if defined(NOVELMIND_HAS_SDL2) && defined(NOVELMIND_HAS_IMGUI)
+#define IMGUI_DEFINE_MATH_OPERATORS
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#endif
 #include <imgui.h>
 #include <imgui_internal.h>
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 #include <backends/imgui_impl_sdl2.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <SDL.h>
@@ -745,12 +754,6 @@ void ImGuiLayer::setupDockspace()
 // Custom Widgets Implementation
 // ============================================================================
 
-#if defined(NOVELMIND_HAS_SDL2) && defined(NOVELMIND_HAS_IMGUI)
-#include <imgui.h>
-#include <imgui_internal.h>
-#include <cstring>
-#endif
-
 namespace widgets {
 
 bool PropertyLabel(const char* label, f32 labelWidth)
@@ -777,7 +780,14 @@ bool PropertyRow(const char* label, const std::function<bool()>& valueWidget, f3
 bool CollapsingHeader(const char* label, bool* isOpen, bool defaultOpen)
 {
 #if defined(NOVELMIND_HAS_SDL2) && defined(NOVELMIND_HAS_IMGUI)
-    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_AllowItemOverlap;
+    const ImGuiTreeNodeFlags overlapFlag =
+#ifdef ImGuiTreeNodeFlags_AllowItemOverlap
+        ImGuiTreeNodeFlags_AllowItemOverlap;
+#else
+        ImGuiTreeNodeFlags_AllowOverlap;
+#endif
+
+    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Framed | overlapFlag;
     if (defaultOpen) flags |= ImGuiTreeNodeFlags_DefaultOpen;
     bool result = ImGui::CollapsingHeader(label, flags);
     if (isOpen) *isOpen = result;
@@ -1114,10 +1124,7 @@ bool TreeNode(const char* label, bool isLeaf, bool isSelected,
     // Handle drag target
     if (dragDropType && ImGui::BeginDragDropTarget())
     {
-        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(dragDropType))
-        {
-            // Payload accepted - caller would handle via callback
-        }
+        ImGui::AcceptDragDropPayload(dragDropType);
         ImGui::EndDragDropTarget();
     }
 
@@ -1203,6 +1210,7 @@ void TimelineRuler(f32 startTime, f32 endTime, f32 currentTime,
         f32 mouseX = ImGui::GetMousePos().x - canvasPos.x;
         // currentTime = viewStart + (mouseX / canvasSize.x) * timeRange;
         // Caller would handle updating current time
+        (void)mouseX;
     }
 
     (void)startTime;

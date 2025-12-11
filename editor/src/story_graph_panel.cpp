@@ -1159,7 +1159,6 @@ void StoryGraphPanel::handleMouseInput()
         if (nodeHit)
         {
             // Check if clicking on output pin to start connection
-            f32 nodeScreenX = (*nodeHit * 1.0f + m_viewOffsetX) * m_zoom;  // TODO: Get actual node position
             // For now, just select the node
             if (!io.KeyShift)
             {

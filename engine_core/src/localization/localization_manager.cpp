@@ -14,6 +14,24 @@ namespace NovelMind::localization
 {
 
 namespace fs = std::filesystem;
+namespace {
+
+bool readFileToString(std::ifstream& file, std::string& out)
+{
+    file.seekg(0, std::ios::end);
+    const std::streampos size = file.tellg();
+    if (size < 0)
+    {
+        return false;
+    }
+
+    out.resize(static_cast<size_t>(size));
+    file.seekg(0, std::ios::beg);
+    file.read(out.data(), static_cast<std::streamsize>(out.size()));
+    return static_cast<bool>(file);
+}
+
+} // namespace
 
 // =========================================================================
 // StringTable Implementation
@@ -192,8 +210,11 @@ Result<void> LocalizationManager::loadStrings(const LocaleId& locale, const std:
         return Result<void>::error("Failed to open localization file: " + filePath);
     }
 
-    std::string content((std::istreambuf_iterator<char>(file)),
-                        std::istreambuf_iterator<char>());
+    std::string content;
+    if (!readFileToString(file, content))
+    {
+        return Result<void>::error("Failed to read localization file: " + filePath);
+    }
 
     return loadStringsFromMemory(locale, content, format);
 }

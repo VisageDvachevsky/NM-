@@ -345,6 +345,11 @@ AssetPreview AssetPreviewManager::generatePreview(const std::string &assetPath,
   return preview;
 }
 
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnull-dereference"
+#endif
+
 void AssetPreviewManager::addToCache(const std::string &path,
                                      const AssetPreview &preview) {
   size_t previewSize = estimatePreviewSize(preview);
@@ -381,6 +386,10 @@ void AssetPreviewManager::evictLRU() {
   m_currentCacheSize -= estimatePreviewSize(lruIt->second.preview);
   m_cache.erase(lruIt);
 }
+
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 
 size_t
 AssetPreviewManager::estimatePreviewSize(const AssetPreview &preview) const {

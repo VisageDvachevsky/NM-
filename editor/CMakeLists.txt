@@ -71,6 +71,16 @@ target_link_libraries(novelmind_editor
 
 # Configure SDL2 and ImGui if available
 if(SDL2_FOUND AND IMGUI_FOUND AND OPENGL_FOUND)
+    set(IMGUI_SOURCES
+        ${IMGUI_DIR}/imgui.cpp
+        ${IMGUI_DIR}/imgui_draw.cpp
+        ${IMGUI_DIR}/imgui_tables.cpp
+        ${IMGUI_DIR}/imgui_widgets.cpp
+        ${IMGUI_DIR}/imgui_demo.cpp
+        ${IMGUI_DIR}/backends/imgui_impl_sdl2.cpp
+        ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
+    )
+
     target_compile_definitions(novelmind_editor PRIVATE
         NOVELMIND_HAS_SDL2
         NOVELMIND_HAS_IMGUI
@@ -81,10 +91,21 @@ if(SDL2_FOUND AND IMGUI_FOUND AND OPENGL_FOUND)
         ${IMGUI_DIR}/backends
         ${OPENGL_INCLUDE_DIR}
     )
+    target_sources(novelmind_editor PRIVATE ${IMGUI_SOURCES})
     target_link_libraries(novelmind_editor PRIVATE
         ${SDL2_LIBRARIES}
         ${OPENGL_LIBRARIES}
+        ${CMAKE_DL_LIBS}
     )
+
+    # Silence warnings in third-party ImGui sources to keep NovelMind warnings actionable
+    if(IMGUI_SOURCES)
+        if (MSVC)
+            set_source_files_properties(${IMGUI_SOURCES} PROPERTIES COMPILE_OPTIONS "/w")
+        else()
+            set_source_files_properties(${IMGUI_SOURCES} PROPERTIES COMPILE_OPTIONS "-w")
+        endif()
+    endif()
     message(STATUS "NovelMind Editor: SDL2 + ImGui GUI enabled")
 elseif(SDL2_FOUND)
     target_compile_definitions(novelmind_editor PRIVATE NOVELMIND_HAS_SDL2)

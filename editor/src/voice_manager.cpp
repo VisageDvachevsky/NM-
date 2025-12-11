@@ -14,6 +14,24 @@ namespace NovelMind::editor
 {
 
 namespace fs = std::filesystem;
+namespace {
+
+bool readFileToString(std::ifstream& file, std::string& out)
+{
+    file.seekg(0, std::ios::end);
+    const std::streampos size = file.tellg();
+    if (size < 0)
+    {
+        return false;
+    }
+
+    out.resize(static_cast<size_t>(size));
+    file.seekg(0, std::ios::beg);
+    file.read(out.data(), static_cast<std::streamsize>(out.size()));
+    return static_cast<bool>(file);
+}
+
+} // namespace
 
 VoiceManager::VoiceManager(audio::AudioManager* audioManager)
     : m_audioManager(audioManager)
@@ -946,8 +964,11 @@ Result<void> VoiceManager::importJSON(const std::string& path)
     }
 
     // Simple JSON parsing for voice assignments
-    std::string content((std::istreambuf_iterator<char>(file)),
-                        std::istreambuf_iterator<char>());
+    std::string content;
+    if (!readFileToString(file, content))
+    {
+        return Result<void>::error("Failed to read file: " + path);
+    }
 
     // Find each assignment
     std::string lineIdPattern = "\"lineId\"\\s*:\\s*\"([^\"]*)\"";

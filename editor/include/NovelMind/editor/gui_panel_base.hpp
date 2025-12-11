@@ -20,6 +20,7 @@
 #include <memory>
 #include <functional>
 #include <vector>
+#include <utility>
 
 namespace NovelMind::editor {
 
@@ -70,18 +71,31 @@ inline bool hasFlag(PanelFlags flags, PanelFlags flag) {
  * @brief Menu item definition for panel menus
  */
 struct MenuItem {
+    MenuItem(std::string labelText = {},
+             std::string shortcutText = {},
+             std::function<void()> actionFn = {},
+             std::function<bool()> enabledFn = []() { return true; },
+             std::function<bool()> checkedFn = nullptr,
+             bool separator = false,
+             std::vector<MenuItem> children = {})
+        : label(std::move(labelText)),
+          shortcut(std::move(shortcutText)),
+          action(std::move(actionFn)),
+          isEnabled(std::move(enabledFn)),
+          isChecked(std::move(checkedFn)),
+          isSeparator(separator),
+          subItems(std::move(children)) {}
+
     std::string label;
     std::string shortcut;
     std::function<void()> action;
-    std::function<bool()> isEnabled = []() { return true; };
-    std::function<bool()> isChecked = nullptr;
-    bool isSeparator = false;
+    std::function<bool()> isEnabled;
+    std::function<bool()> isChecked;
+    bool isSeparator;
     std::vector<MenuItem> subItems;
 
     static MenuItem separator() {
-        MenuItem item;
-        item.isSeparator = true;
-        return item;
+        return MenuItem{"", "", {}, []() { return true; }, nullptr, true, {}};
     }
 };
 

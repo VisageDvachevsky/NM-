@@ -22,6 +22,7 @@
 #include <unordered_map>
 #include <optional>
 #include <variant>
+#include <utility>
 
 namespace NovelMind::localization
 {
@@ -31,6 +32,9 @@ namespace NovelMind::localization
  */
 struct LocaleId
 {
+    LocaleId(std::string languageCode = {}, std::string regionCode = {})
+        : language(std::move(languageCode)), region(std::move(regionCode)) {}
+
     std::string language;    // ISO 639-1 code (e.g., "en", "ja", "ru")
     std::string region;      // ISO 3166-1 code (e.g., "US", "JP", "RU")
 
