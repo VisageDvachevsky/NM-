@@ -20,6 +20,26 @@ add_library(novelmind_editor STATIC
     src/timeline_playback.cpp
     src/editor_state.cpp
     src/error_reporter.cpp
+
+    # v0.2.0 GUI systems
+    src/imgui_integration.cpp
+    src/gui_panel_base.cpp
+    src/scene_view_panel.cpp
+    src/story_graph_panel.cpp
+    src/timeline_panel.cpp
+    src/inspector_panel.cpp
+    src/asset_browser_panel.cpp
+    src/hierarchy_panel.cpp
+    src/console_panel.cpp
+    src/build_settings_panel.cpp
+    src/play_mode_controller.cpp
+
+    # v0.2.0 Additional GUI panels
+    src/curve_editor_panel.cpp
+    src/voice_manager_panel.cpp
+    src/localization_panel.cpp
+    src/debug_overlay_panel.cpp
+    src/hotkeys_manager.cpp
 )
 
 # Alias for backward compatibility
