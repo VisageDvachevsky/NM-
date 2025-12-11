@@ -4,7 +4,9 @@
  */
 
 #include "NovelMind/editor/scene_view_panel.hpp"
+#include "NovelMind/editor/editor_app.hpp"
 #include "NovelMind/editor/imgui_integration.hpp"
+#include "NovelMind/scene/scene_graph.hpp"
 #include <algorithm>
 #include <cmath>
 
@@ -192,6 +194,12 @@ std::vector<MenuItem> SceneViewPanel::getContextMenuItems() const
 
 void SceneViewPanel::onInitialize()
 {
+    // Get SceneGraph reference from EditorApp
+    if (getApp())
+    {
+        m_sceneGraph = getApp()->getSceneGraph();
+    }
+
     // Subscribe to relevant events
     subscribeEvent<SceneObjectTransformedEvent>(
         [this](const SceneObjectTransformedEvent& /*event*/) {
@@ -575,49 +583,111 @@ void SceneViewPanel::renderGizmos()
 void SceneViewPanel::renderPlaceholderObjects()
 {
 #if defined(NOVELMIND_HAS_SDL2) && defined(NOVELMIND_HAS_IMGUI)
-    ImDrawList* drawList = ImGui::GetWindowDrawList();
-    ImVec2 contentMin = ImGui::GetCursorScreenPos();
+    // If we have a SceneGraph, render real objects from it
+    if (m_sceneGraph)
+    {
+        ImDrawList* drawList = ImGui::GetWindowDrawList();
+        ImVec2 contentMin = ImGui::GetCursorScreenPos();
 
-    // Draw some placeholder objects to demonstrate the scene view
-    // Background layer
-    auto [bgX, bgY] = sceneToScreen(0, 0);
-    auto [bgX2, bgY2] = sceneToScreen(m_sceneWidth, m_sceneHeight);
-    drawList->AddRectFilled(
-        ImVec2(contentMin.x + bgX, contentMin.y + bgY),
-        ImVec2(contentMin.x + bgX2, contentMin.y + bgY2),
-        IM_COL32(60, 80, 100, 100));
+        // Helper lambda to render a scene object
+        auto renderSceneObject = [&](const scene::SceneObjectBase* obj) {
+            if (!obj || !obj->isVisible()) return;
 
-    // Character sprite placeholder (centered)
-    auto [charX, charY] = sceneToScreen(m_sceneWidth/2 - 100, m_sceneHeight/2 - 150);
-    auto [charX2, charY2] = sceneToScreen(m_sceneWidth/2 + 100, m_sceneHeight/2 + 150);
-    drawList->AddRectFilled(
-        ImVec2(contentMin.x + charX, contentMin.y + charY),
-        ImVec2(contentMin.x + charX2, contentMin.y + charY2),
-        IM_COL32(180, 140, 100, 200));
-    drawList->AddRect(
-        ImVec2(contentMin.x + charX, contentMin.y + charY),
-        ImVec2(contentMin.x + charX2, contentMin.y + charY2),
-        IM_COL32(120, 100, 80, 255), 0.0f, 0, 2.0f);
-    // Character label
-    drawList->AddText(ImVec2(contentMin.x + charX + 5, contentMin.y + charY + 5),
-        IM_COL32(255, 255, 255, 255), "Character");
+            // Get object bounds
+            f32 x = obj->getX();
+            f32 y = obj->getY();
+            f32 scaleX = obj->getScaleX();
+            f32 scaleY = obj->getScaleY();
+            f32 alpha = obj->getAlpha();
 
-    // Dialogue box placeholder (bottom)
-    auto [dlgX, dlgY] = sceneToScreen(100, m_sceneHeight - 200);
-    auto [dlgX2, dlgY2] = sceneToScreen(m_sceneWidth - 100, m_sceneHeight - 50);
-    drawList->AddRectFilled(
-        ImVec2(contentMin.x + dlgX, contentMin.y + dlgY),
-        ImVec2(contentMin.x + dlgX2, contentMin.y + dlgY2),
-        IM_COL32(40, 40, 40, 220));
-    drawList->AddRect(
-        ImVec2(contentMin.x + dlgX, contentMin.y + dlgY),
-        ImVec2(contentMin.x + dlgX2, contentMin.y + dlgY2),
-        IM_COL32(100, 100, 100, 255), 4.0f, 0, 2.0f);
-    // Dialogue text
-    drawList->AddText(ImVec2(contentMin.x + dlgX + 20, contentMin.y + dlgY + 20),
-        IM_COL32(220, 220, 220, 255), "Dialogue Box");
-    drawList->AddText(ImVec2(contentMin.x + dlgX + 20, contentMin.y + dlgY + 45),
-        IM_COL32(180, 180, 180, 255), "Hello, welcome to NovelMind!");
+            // Assume default object size (can be overridden per object type)
+            f32 width = 200.0f * scaleX;
+            f32 height = 300.0f * scaleY;
+
+            // Convert to screen coordinates
+            auto [screenX, screenY] = sceneToScreen(x - width/2, y - height/2);
+            auto [screenX2, screenY2] = sceneToScreen(x + width/2, y + height/2);
+
+            // Choose color based on object type
+            ImU32 fillColor;
+            const char* label = obj->getTypeName();
+
+            switch (obj->getType())
+            {
+                case scene::SceneObjectType::Background:
+                    fillColor = IM_COL32(60, 80, 100, static_cast<u8>(100 * alpha));
+                    break;
+                case scene::SceneObjectType::Character:
+                    fillColor = IM_COL32(180, 140, 100, static_cast<u8>(200 * alpha));
+                    break;
+                case scene::SceneObjectType::DialogueUI:
+                    fillColor = IM_COL32(40, 40, 40, static_cast<u8>(220 * alpha));
+                    break;
+                case scene::SceneObjectType::ChoiceUI:
+                    fillColor = IM_COL32(60, 60, 80, static_cast<u8>(220 * alpha));
+                    break;
+                default:
+                    fillColor = IM_COL32(100, 100, 100, static_cast<u8>(150 * alpha));
+                    break;
+            }
+
+            // Draw object bounds
+            drawList->AddRectFilled(
+                ImVec2(contentMin.x + screenX, contentMin.y + screenY),
+                ImVec2(contentMin.x + screenX2, contentMin.y + screenY2),
+                fillColor);
+
+            drawList->AddRect(
+                ImVec2(contentMin.x + screenX, contentMin.y + screenY),
+                ImVec2(contentMin.x + screenX2, contentMin.y + screenY2),
+                IM_COL32(120, 120, 120, 255), 0.0f, 0, 1.0f);
+
+            // Draw object label
+            std::string displayText = std::string(label) + ": " + obj->getId();
+            drawList->AddText(
+                ImVec2(contentMin.x + screenX + 5, contentMin.y + screenY + 5),
+                IM_COL32(255, 255, 255, 255),
+                displayText.c_str());
+        };
+
+        // Render objects from all layers
+        // Background layer
+        for (const auto& obj : m_sceneGraph->getBackgroundLayer().getObjects())
+        {
+            renderSceneObject(obj.get());
+        }
+
+        // Character layer
+        for (const auto& obj : m_sceneGraph->getCharacterLayer().getObjects())
+        {
+            renderSceneObject(obj.get());
+        }
+
+        // UI layer
+        for (const auto& obj : m_sceneGraph->getUILayer().getObjects())
+        {
+            renderSceneObject(obj.get());
+        }
+
+        // Effect layer
+        for (const auto& obj : m_sceneGraph->getEffectLayer().getObjects())
+        {
+            renderSceneObject(obj.get());
+        }
+    }
+    else
+    {
+        // Fallback: render placeholder if no SceneGraph available
+        ImDrawList* drawList = ImGui::GetWindowDrawList();
+        ImVec2 contentMin = ImGui::GetCursorScreenPos();
+
+        // Draw empty scene message
+        auto [msgX, msgY] = sceneToScreen(m_sceneWidth/2 - 150, m_sceneHeight/2);
+        drawList->AddText(
+            ImVec2(contentMin.x + msgX, contentMin.y + msgY),
+            IM_COL32(150, 150, 150, 255),
+            "No scene loaded. Create or open a project.");
+    }
 #endif
 }
 
