@@ -49,7 +49,9 @@ void CurveEditorPanel::onRender()
 {
     // Main layout: sidebar + canvas
     f32 sidebarWidth = m_showPresets ? 200.0f : 0.0f;
+    (void)sidebarWidth; // Reserved for layout calculations
     f32 infoHeight = m_showInfo ? 80.0f : 0.0f;
+    (void)infoHeight; // Reserved for layout calculations
 
     // Presets sidebar
     if (m_showPresets) {
@@ -155,10 +157,12 @@ void CurveEditorPanel::renderGrid()
     // Draws horizontal and vertical lines at regular intervals
 
     const auto& theme = ImGuiLayer::instance().getCurrentTheme();
+    (void)theme; // Reserved for grid rendering colors
 
     // Minor grid lines
     for (i32 i = 0; i <= 10; ++i) {
         f32 t = static_cast<f32>(i) / 10.0f;
+        (void)t; // Reserved for grid line positioning
         // Draw vertical line at curveToScreen(t, 0) to curveToScreen(t, 1)
         // Draw horizontal line at curveToScreen(0, t) to curveToScreen(1, t)
     }
@@ -175,10 +179,13 @@ void CurveEditorPanel::renderCurve()
     auto samples = m_curve->sample(100);
 
     const auto& theme = ImGuiLayer::instance().getCurrentTheme();
+    (void)theme; // Reserved for curve rendering colors
 
     for (size_t i = 1; i < samples.size(); ++i) {
         auto p0 = curveToScreen(samples[i - 1].x, samples[i - 1].y);
+        (void)p0; // Reserved for line rendering
         auto p1 = curveToScreen(samples[i].x, samples[i].y);
+        (void)p1; // Reserved for line rendering
         // Draw line from p0 to p1 with curveColor
     }
 }
@@ -189,10 +196,12 @@ void CurveEditorPanel::renderPoints()
 
     const auto& points = m_curve->getPoints();
     const auto& theme = ImGuiLayer::instance().getCurrentTheme();
+    (void)theme; // Reserved for point rendering colors
 
     for (size_t i = 0; i < points.size(); ++i) {
         const auto& pt = points[i];
         auto screenPos = curveToScreen(pt.time, pt.value);
+        (void)screenPos; // Reserved for point rendering
 
         bool isSelected = std::find(m_selectedPoints.begin(), m_selectedPoints.end(), i)
                           != m_selectedPoints.end();
@@ -200,6 +209,7 @@ void CurveEditorPanel::renderPoints()
         // Draw point circle
         // Selected points are larger and highlighted
         f32 radius = isSelected ? 7.0f : 5.0f;
+        (void)radius; // Reserved for point circle rendering
         // Draw filled circle at screenPos
     }
 }
@@ -219,6 +229,7 @@ void CurveEditorPanel::renderHandles()
         if (!isSelected) continue;
 
         auto pointPos = curveToScreen(pt.time, pt.value);
+        (void)pointPos; // Reserved for handle rendering
 
         // In handle
         if (i > 0) {
@@ -226,6 +237,7 @@ void CurveEditorPanel::renderHandles()
                 pt.time + pt.inHandleX,
                 pt.value + pt.inHandleY
             );
+            (void)inHandlePos; // Reserved for in handle rendering
             // Draw line from pointPos to inHandlePos
             // Draw small circle at inHandlePos
         }
@@ -236,6 +248,7 @@ void CurveEditorPanel::renderHandles()
                 pt.time + pt.outHandleX,
                 pt.value + pt.outHandleY
             );
+            (void)outHandlePos; // Reserved for out handle rendering
             // Draw line from pointPos to outHandlePos
             // Draw small circle at outHandlePos
         }
@@ -248,6 +261,7 @@ void CurveEditorPanel::renderPreviewIndicator()
 
     f32 value = m_curve->evaluate(m_previewTime);
     auto pos = curveToScreen(m_previewTime, value);
+    (void)pos; // Reserved for preview indicator rendering
 
     // Draw vertical line at current preview time
     // Draw circle at current value on curve
@@ -262,6 +276,7 @@ void CurveEditorPanel::renderPresetsSidebar()
 
     for (const auto& id : presetIds) {
         const auto* preset = m_library.getCurve(id);
+        (void)preset; // Reserved for preset display
         if (!preset) continue;
 
         bool isSelected = (m_hoveredPreset == id);
@@ -583,17 +598,17 @@ std::vector<MenuItem> CurveEditorPanel::getContextMenuItems() const
     if (!m_selectedPoints.empty()) {
         items.push_back({"Delete Point", "Delete",
             [this]() { const_cast<CurveEditorPanel*>(this)->deleteSelectedPoints(); },
-            [this]() { return m_selectedPoints.size() > 0; }});
+            [this]() { return m_selectedPoints.size() > 0; }, {}});
         items.push_back(MenuItem::separator());
     }
 
     items.push_back({"Add Point", "",
-        [this]() { /* Add point at right-click location */ }});
+        [this]() { /* Add point at right-click location */ }, nullptr, {}});
 
     items.push_back(MenuItem::separator());
 
     items.push_back({"Reset View", "",
-        [this]() { const_cast<CurveEditorPanel*>(this)->resetView(); }});
+        [this]() { const_cast<CurveEditorPanel*>(this)->resetView(); }, nullptr, {}});
 
     return items;
 }
