@@ -49,19 +49,19 @@ void InspectorPanel::onInitialize()
 {
     // Initialize property definitions for common types
     m_propertyCache["SceneObject"] = {
-        {"name", "Name", "General", "Object name", PropertyType::String},
+        {"name", "Name", "General", "Object name", PropertyType::String, false, {}, ""},
         {"position_x", "Position X", "Transform", "X coordinate", PropertyType::Float, false, {}, "", -10000.0f, 10000.0f, 1.0f},
         {"position_y", "Position Y", "Transform", "Y coordinate", PropertyType::Float, false, {}, "", -10000.0f, 10000.0f, 1.0f},
         {"rotation", "Rotation", "Transform", "Rotation in degrees", PropertyType::Float, false, {}, "", 0.0f, 360.0f, 1.0f},
         {"scale_x", "Scale X", "Transform", "Horizontal scale", PropertyType::Float, false, {}, "", 0.0f, 10.0f, 0.1f},
         {"scale_y", "Scale Y", "Transform", "Vertical scale", PropertyType::Float, false, {}, "", 0.0f, 10.0f, 0.1f},
-        {"visible", "Visible", "Rendering", "Object visibility", PropertyType::Bool},
+        {"visible", "Visible", "Rendering", "Object visibility", PropertyType::Bool, false, {}, ""},
         {"alpha", "Alpha", "Rendering", "Opacity (0-1)", PropertyType::Float, false, {}, "", 0.0f, 1.0f, 0.01f},
     };
 
     m_propertyCache["GraphNode"] = {
-        {"type", "Type", "Node", "Node type", PropertyType::String, true},
-        {"position", "Position", "Node", "Position in graph", PropertyType::Vector2, true},
+        {"type", "Type", "Node", "Node type", PropertyType::String, true, {}, ""},
+        {"position", "Position", "Node", "Position in graph", PropertyType::Vector2, true, {}, ""},
     };
 }
 

@@ -217,7 +217,7 @@ void AssetBrowserPanel::showInExplorer()
     // Windows: use explorer
     std::string cmd = "explorer /select,\"" + m_selectedAssets[0] + "\"";
     std::system(cmd.c_str());
-#elif __APPLE__
+#elif defined(__APPLE__)
     // macOS: use open -R
     std::string cmd = "open -R \"" + m_selectedAssets[0] + "\"";
     std::system(cmd.c_str());
@@ -347,14 +347,14 @@ std::vector<MenuItem> AssetBrowserPanel::getMenuItems() const
     viewMenu.label = "View";
     viewMenu.subItems = {
         {"Grid View", "", [this]() { const_cast<AssetBrowserPanel*>(this)->setGridView(true); },
-         []() { return true; }, [this]() { return m_isGridView; }},
+         []() { return true; }, [this]() { return m_isGridView; }, false, {}},
         {"List View", "", [this]() { const_cast<AssetBrowserPanel*>(this)->setGridView(false); },
-         []() { return true; }, [this]() { return !m_isGridView; }},
+         []() { return true; }, [this]() { return !m_isGridView; }, false, {}},
         MenuItem::separator(),
         {"Show Preview", "", [this]() { const_cast<AssetBrowserPanel*>(this)->setShowPreview(!m_showPreview); },
-         []() { return true; }, [this]() { return m_showPreview; }},
+         []() { return true; }, [this]() { return m_showPreview; }, false, {}},
         {"Show Hidden Files", "", [this]() { const_cast<AssetBrowserPanel*>(this)->m_showHiddenFiles = !m_showHiddenFiles; },
-         []() { return true; }, [this]() { return m_showHiddenFiles; }},
+         []() { return true; }, [this]() { return m_showHiddenFiles; }, false, {}},
     };
     items.push_back(viewMenu);
 
@@ -403,7 +403,7 @@ std::vector<MenuItem> AssetBrowserPanel::getContextMenuItems() const
                 }
             }
         }
-    }, [hasSelection]() { return hasSelection; }});
+    }, [hasSelection]() { return hasSelection; }, nullptr, false, {}});
 
     items.push_back(MenuItem::separator());
 
@@ -411,41 +411,41 @@ std::vector<MenuItem> AssetBrowserPanel::getContextMenuItems() const
     MenuItem createMenu;
     createMenu.label = "Create";
     createMenu.subItems = {
-        {"Folder", "", [this]() { const_cast<AssetBrowserPanel*>(this)->createFolder(); }},
-        {"Scene", "", []() { /* Create scene */ }},
-        {"Script", "", []() { /* Create script */ }},
+        {"Folder", "", [this]() { const_cast<AssetBrowserPanel*>(this)->createFolder(); }, []() { return true; }, nullptr, false, {}},
+        {"Scene", "", []() { /* Create scene */ }, []() { return true; }, nullptr, false, {}},
+        {"Script", "", []() { /* Create script */ }, []() { return true; }, nullptr, false, {}},
     };
     items.push_back(createMenu);
 
     items.push_back(MenuItem::separator());
 
-    items.push_back({"Cut", "Ctrl+X", []() { /* Cut */ }, [hasSelection]() { return hasSelection; }});
-    items.push_back({"Copy", "Ctrl+C", []() { /* Copy */ }, [hasSelection]() { return hasSelection; }});
-    items.push_back({"Paste", "Ctrl+V", []() { /* Paste */ }});
+    items.push_back({"Cut", "Ctrl+X", []() { /* Cut */ }, [hasSelection]() { return hasSelection; }, nullptr, false, {}});
+    items.push_back({"Copy", "Ctrl+C", []() { /* Copy */ }, [hasSelection]() { return hasSelection; }, nullptr, false, {}});
+    items.push_back({"Paste", "Ctrl+V", []() { /* Paste */ }, []() { return true; }, nullptr, false, {}});
 
     items.push_back(MenuItem::separator());
 
     items.push_back({"Duplicate", "Ctrl+D",
         [this]() { const_cast<AssetBrowserPanel*>(this)->duplicateSelected(); },
-        [hasSelection]() { return hasSelection; }});
+        [hasSelection]() { return hasSelection; }, {}});
     items.push_back({"Rename", "F2",
         [this]() { const_cast<AssetBrowserPanel*>(this)->renameSelected(); },
-        [hasSelection]() { return hasSelection; }});
+        [hasSelection]() { return hasSelection; }, {}});
     items.push_back({"Delete", "Delete",
         [this]() { const_cast<AssetBrowserPanel*>(this)->deleteSelected(); },
-        [hasSelection]() { return hasSelection; }});
+        [hasSelection]() { return hasSelection; }, {}});
 
     items.push_back(MenuItem::separator());
 
     items.push_back({"Reimport", "",
         [this]() { const_cast<AssetBrowserPanel*>(this)->reimportSelected(); },
-        [hasSelection]() { return hasSelection; }});
+        [hasSelection]() { return hasSelection; }, {}});
     items.push_back({"Show in Explorer", "",
         [this]() { const_cast<AssetBrowserPanel*>(this)->showInExplorer(); },
-        [hasSelection]() { return hasSelection; }});
+        [hasSelection]() { return hasSelection; }, {}});
     items.push_back({"Copy Path", "",
         [this]() { const_cast<AssetBrowserPanel*>(this)->copyPathToClipboard(); },
-        [hasSelection]() { return hasSelection; }});
+        [hasSelection]() { return hasSelection; }, {}});
 
     return items;
 }
@@ -1534,6 +1534,7 @@ void AssetBrowserPanel::loadDirectory(const std::string& path)
                 {
                     entry.size = std::filesystem::file_size(dirEntry);
                     auto ftime = std::filesystem::last_write_time(dirEntry);
+                    (void)ftime; // Reserved for future use
                     // Convert to readable string (simplified)
                     entry.modifiedTime = ""; // Would format properly
                 }

@@ -433,22 +433,22 @@ std::vector<MenuItem> TimelinePanel::getMenuItems() const
     MenuItem editMenu;
     editMenu.label = "Edit";
     editMenu.subItems = {
-        {"Add Keyframe", "K", [this]() { /* Add keyframe at current time */ }},
+        {"Add Keyframe", "K", [this]() { /* Add keyframe at current time */ }, []() { return true; }, nullptr, false, {}},
         {"Delete Keyframes", "Delete", [this]() { const_cast<TimelinePanel*>(this)->deleteSelectedKeyframes(); },
-         [this]() { return !m_selectedKeyframes.empty(); }},
+         [this]() { return !m_selectedKeyframes.empty(); }, nullptr, false, {}},
         MenuItem::separator(),
-        {"Select All Keyframes", "Ctrl+A", []() { /* Select all */ }},
+        {"Select All Keyframes", "Ctrl+A", []() { /* Select all */ }, []() { return true; }, nullptr, false, {}},
     };
     items.push_back(editMenu);
 
     MenuItem viewMenu;
     viewMenu.label = "View";
     viewMenu.subItems = {
-        {"Zoom to Fit", "F", [this]() { const_cast<TimelinePanel*>(this)->zoomToFit(); }},
-        {"Reset View", "Home", [this]() { const_cast<TimelinePanel*>(this)->resetView(); }},
+        {"Zoom to Fit", "F", [this]() { const_cast<TimelinePanel*>(this)->zoomToFit(); }, []() { return true; }, nullptr, false, {}},
+        {"Reset View", "Home", [this]() { const_cast<TimelinePanel*>(this)->resetView(); }, []() { return true; }, nullptr, false, {}},
         MenuItem::separator(),
         {"Show Curve Editor", "", [this]() { const_cast<TimelinePanel*>(this)->m_showCurveEditor = !m_showCurveEditor; },
-         []() { return true; }, [this]() { return m_showCurveEditor; }},
+         []() { return true; }, [this]() { return m_showCurveEditor; }, false, {}},
     };
     items.push_back(viewMenu);
 
@@ -1361,12 +1361,12 @@ void TimelinePanel::handleKeyboardInput()
 f32 TimelinePanel::timeToPixel(f64 time) const
 {
     f64 normalizedTime = (time - m_viewStartTime) / (m_viewEndTime - m_viewStartTime);
-    return static_cast<f32>(normalizedTime * (m_contentWidth - m_headerWidth));
+    return static_cast<f32>(normalizedTime * static_cast<f64>(m_contentWidth - m_headerWidth));
 }
 
 f64 TimelinePanel::pixelToTime(f32 pixel) const
 {
-    f64 normalizedX = static_cast<f64>(pixel) / (m_contentWidth - m_headerWidth);
+    f64 normalizedX = static_cast<f64>(pixel) / static_cast<f64>(m_contentWidth - m_headerWidth);
     return m_viewStartTime + normalizedX * (m_viewEndTime - m_viewStartTime);
 }
 
@@ -1461,7 +1461,7 @@ f32 TimelinePanel::interpolateKeyframes(const Keyframe& k1, const Keyframe& k2, 
             break;
     }
 
-    return static_cast<f32>(k1.value + (k2.value - k1.value) * t);
+    return static_cast<f32>(static_cast<f64>(k1.value) + static_cast<f64>(k2.value - k1.value) * t);
 }
 
 } // namespace NovelMind::editor

@@ -154,15 +154,15 @@ class IPlayModeListener
 public:
     virtual ~IPlayModeListener() = default;
 
-    virtual void onPlayModeStateChanged(PlayModeState oldState, PlayModeState newState) {}
+    virtual void onPlayModeStateChanged(PlayModeState /*oldState*/, PlayModeState /*newState*/) {}
     virtual void onPlayModeStarting() {}
     virtual void onPlayModeStarted() {}
     virtual void onPlayModePaused() {}
     virtual void onPlayModeResumed() {}
     virtual void onPlayModeStopping() {}
     virtual void onPlayModeStopped() {}
-    virtual void onBreakpointHit(const Breakpoint& breakpoint) {}
-    virtual void onScriptError(const std::string& error, const std::string& nodeId) {}
+    virtual void onBreakpointHit(const Breakpoint& /*breakpoint*/) {}
+    virtual void onScriptError(const std::string& /*error*/, const std::string& /*nodeId*/) {}
 };
 
 /**

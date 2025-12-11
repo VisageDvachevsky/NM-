@@ -300,8 +300,8 @@ private:
     bool m_sortAscending = true;
 
     // Locale selection
-    localization::LocaleId m_primaryLocale{"en"};
-    localization::LocaleId m_secondaryLocale{"ja"};
+    localization::LocaleId m_primaryLocale{"en", ""};
+    localization::LocaleId m_secondaryLocale{"ja", ""};
     std::vector<localization::LocaleId> m_availableLocales;
     i32 m_primaryLocaleIndex = 0;
     i32 m_secondaryLocaleIndex = 1;
@@ -312,7 +312,7 @@ private:
 
     // Editing state
     std::string m_editingKey;
-    localization::LocaleId m_editingLocale{""};
+    localization::LocaleId m_editingLocale{"", ""};
     char m_editBuffer[4096] = {0};
     bool m_isEditing = false;
 

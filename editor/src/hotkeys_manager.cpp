@@ -284,186 +284,186 @@ void HotkeysManager::registerStandardCommands()
     registerCommand({
         Commands::FileSave, "Save", "Save the current file",
         ShortcutCategory::File, ShortcutContext::Global,
-        {KeyCode::S, Modifiers::Ctrl}
+        {KeyCode::S, Modifiers::Ctrl}, {}, false, nullptr
     });
 
     registerCommand({
         Commands::FileSaveAs, "Save As", "Save the current file with a new name",
         ShortcutCategory::File, ShortcutContext::Global,
-        {KeyCode::S, Modifiers::CtrlShift}
+        {KeyCode::S, Modifiers::CtrlShift}, {}, false, nullptr
     });
 
     registerCommand({
         Commands::FileNew, "New", "Create a new project",
         ShortcutCategory::File, ShortcutContext::Global,
-        {KeyCode::N, Modifiers::Ctrl}
+        {KeyCode::N, Modifiers::Ctrl}, {}, false, nullptr
     });
 
     registerCommand({
         Commands::FileOpen, "Open", "Open a project",
         ShortcutCategory::File, ShortcutContext::Global,
-        {KeyCode::O, Modifiers::Ctrl}
+        {KeyCode::O, Modifiers::Ctrl}, {}, false, nullptr
     });
 
     // Edit commands
     registerCommand({
         Commands::EditUndo, "Undo", "Undo the last action",
         ShortcutCategory::Edit, ShortcutContext::Global,
-        {KeyCode::Z, Modifiers::Ctrl}
+        {KeyCode::Z, Modifiers::Ctrl}, {}, false, nullptr
     });
 
     registerCommand({
         Commands::EditRedo, "Redo", "Redo the last undone action",
         ShortcutCategory::Edit, ShortcutContext::Global,
-        {KeyCode::Y, Modifiers::Ctrl}
+        {KeyCode::Y, Modifiers::Ctrl}, {}, false, nullptr
     });
 
     registerCommand({
         Commands::EditCut, "Cut", "Cut selection to clipboard",
         ShortcutCategory::Edit, ShortcutContext::Global,
-        {KeyCode::X, Modifiers::Ctrl}
+        {KeyCode::X, Modifiers::Ctrl}, {}, false, nullptr
     });
 
     registerCommand({
         Commands::EditCopy, "Copy", "Copy selection to clipboard",
         ShortcutCategory::Edit, ShortcutContext::Global,
-        {KeyCode::C, Modifiers::Ctrl}
+        {KeyCode::C, Modifiers::Ctrl}, {}, false, nullptr
     });
 
     registerCommand({
         Commands::EditPaste, "Paste", "Paste from clipboard",
         ShortcutCategory::Edit, ShortcutContext::Global,
-        {KeyCode::V, Modifiers::Ctrl}
+        {KeyCode::V, Modifiers::Ctrl}, {}, false, nullptr
     });
 
     registerCommand({
         Commands::EditDelete, "Delete", "Delete selection",
         ShortcutCategory::Edit, ShortcutContext::Global,
-        {KeyCode::Delete, Modifiers::None}
+        {KeyCode::Delete, Modifiers::None}, {}, false, nullptr
     });
 
     registerCommand({
         Commands::EditDuplicate, "Duplicate", "Duplicate selection",
         ShortcutCategory::Edit, ShortcutContext::Global,
-        {KeyCode::D, Modifiers::Ctrl}
+        {KeyCode::D, Modifiers::Ctrl}, {}, false, nullptr
     });
 
     registerCommand({
         Commands::EditSelectAll, "Select All", "Select all items",
         ShortcutCategory::Edit, ShortcutContext::Global,
-        {KeyCode::A, Modifiers::Ctrl}
+        {KeyCode::A, Modifiers::Ctrl}, {}, false, nullptr
     });
 
     registerCommand({
         Commands::EditFind, "Find", "Open find dialog",
         ShortcutCategory::Edit, ShortcutContext::Global,
-        {KeyCode::F, Modifiers::Ctrl}
+        {KeyCode::F, Modifiers::Ctrl}, {}, false, nullptr
     });
 
     registerCommand({
         Commands::EditRename, "Rename", "Rename selected item",
         ShortcutCategory::Edit, ShortcutContext::Global,
-        {KeyCode::F2, Modifiers::None}
+        {KeyCode::F2, Modifiers::None}, {}, false, nullptr
     });
 
     // Playback commands
     registerCommand({
         Commands::PlaybackToggle, "Play/Pause", "Toggle play mode",
         ShortcutCategory::Playback, ShortcutContext::Global,
-        {KeyCode::F5, Modifiers::None}
+        {KeyCode::F5, Modifiers::None}, {}, false, nullptr
     });
 
     registerCommand({
         Commands::PlaybackStop, "Stop", "Stop play mode",
         ShortcutCategory::Playback, ShortcutContext::Global,
-        {KeyCode::F5, Modifiers::Shift}
+        {KeyCode::F5, Modifiers::Shift}, {}, false, nullptr
     });
 
     registerCommand({
         Commands::PlaybackStepForward, "Step Forward", "Step to next dialogue/choice",
         ShortcutCategory::Playback, ShortcutContext::PlayMode,
-        {KeyCode::F10, Modifiers::None}
+        {KeyCode::F10, Modifiers::None}, {}, false, nullptr
     });
 
     // View commands
     registerCommand({
         Commands::ViewZoomIn, "Zoom In", "Zoom in",
         ShortcutCategory::View, ShortcutContext::Global,
-        {KeyCode::Plus, Modifiers::Ctrl}
+        {KeyCode::Plus, Modifiers::Ctrl}, {}, false, nullptr
     });
 
     registerCommand({
         Commands::ViewZoomOut, "Zoom Out", "Zoom out",
         ShortcutCategory::View, ShortcutContext::Global,
-        {KeyCode::Minus, Modifiers::Ctrl}
+        {KeyCode::Minus, Modifiers::Ctrl}, {}, false, nullptr
     });
 
     registerCommand({
         Commands::ViewZoomReset, "Reset Zoom", "Reset zoom to 100%",
         ShortcutCategory::View, ShortcutContext::Global,
-        {KeyCode::Num0, Modifiers::Ctrl}
+        {KeyCode::Num0, Modifiers::Ctrl}, {}, false, nullptr
     });
 
     registerCommand({
         Commands::ViewZoomFit, "Fit to View", "Fit content to view",
         ShortcutCategory::View, ShortcutContext::Global,
-        {KeyCode::F, Modifiers::None}
+        {KeyCode::F, Modifiers::None}, {}, false, nullptr
     });
 
     // Window/Panel commands
     registerCommand({
         Commands::WindowSwitchPanel, "Switch Panel", "Quick switch between panels",
         ShortcutCategory::Window, ShortcutContext::Global,
-        {KeyCode::P, Modifiers::Ctrl}
+        {KeyCode::P, Modifiers::Ctrl}, {}, false, nullptr
     });
 
     registerCommand({
         Commands::WindowConsole, "Console", "Show/hide console panel",
         ShortcutCategory::Window, ShortcutContext::Global,
-        {KeyCode::Backquote, Modifiers::Ctrl}
+        {KeyCode::Backquote, Modifiers::Ctrl}, {}, false, nullptr
     });
 
     registerCommand({
         Commands::WindowInspector, "Inspector", "Show/hide inspector panel",
         ShortcutCategory::Window, ShortcutContext::Global,
-        {KeyCode::I, Modifiers::Ctrl}
+        {KeyCode::I, Modifiers::Ctrl}, {}, false, nullptr
     });
 
     registerCommand({
         Commands::WindowHierarchy, "Hierarchy", "Show/hide hierarchy panel",
         ShortcutCategory::Window, ShortcutContext::Global,
-        {KeyCode::H, Modifiers::CtrlShift}
+        {KeyCode::H, Modifiers::CtrlShift}, {}, false, nullptr
     });
 
     // Debug commands
     registerCommand({
         Commands::DebugToggleBreakpoint, "Toggle Breakpoint", "Toggle breakpoint at current node",
         ShortcutCategory::Debug, ShortcutContext::StoryGraph,
-        {KeyCode::F9, Modifiers::None}
+        {KeyCode::F9, Modifiers::None}, {}, false, nullptr
     });
 
     registerCommand({
         Commands::DebugContinue, "Continue", "Continue execution",
         ShortcutCategory::Debug, ShortcutContext::PlayMode,
-        {KeyCode::F5, Modifiers::None}
+        {KeyCode::F5, Modifiers::None}, {}, false, nullptr
     });
 
     registerCommand({
         Commands::DebugStepOver, "Step Over", "Step over current instruction",
         ShortcutCategory::Debug, ShortcutContext::PlayMode,
-        {KeyCode::F10, Modifiers::None}
+        {KeyCode::F10, Modifiers::None}, {}, false, nullptr
     });
 
     registerCommand({
         Commands::DebugStepInto, "Step Into", "Step into function",
         ShortcutCategory::Debug, ShortcutContext::PlayMode,
-        {KeyCode::F11, Modifiers::None}
+        {KeyCode::F11, Modifiers::None}, {}, false, nullptr
     });
 
     registerCommand({
         Commands::DebugStepOut, "Step Out", "Step out of function",
         ShortcutCategory::Debug, ShortcutContext::PlayMode,
-        {KeyCode::F11, Modifiers::Shift}
+        {KeyCode::F11, Modifiers::Shift}, {}, false, nullptr
     });
 }
 
