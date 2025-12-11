@@ -551,7 +551,19 @@ private:
     void renderOpenSceneDialog();
     void renderAboutDialogContent();
     void renderErrorDialog();
+    void renderConfirmationDialog();
+    void renderProgressDialog();
+    void renderFileBrowserDialog();
     void showError(const std::string& message);
+    void showConfirmation(const std::string& message, std::function<void()> onConfirm, std::function<void()> onCancel = nullptr);
+    void showProgress(const std::string& title, const std::string& message, float progress);
+    void hideProgress();
+
+    // Helper methods
+    void loadRecentProjects();
+    void saveRecentProjects();
+    void addToRecentProjects(const std::string& path);
+    std::vector<std::string> getProjectTemplates() const;
 
     EditorConfig m_config;
     bool m_initialized = false;
@@ -590,12 +602,36 @@ private:
     bool m_showOpenSceneDialog = false;
     bool m_showAboutDialog = false;
     bool m_showErrorDialog = false;
+    bool m_showConfirmationDialog = false;
+    bool m_showProgressDialog = false;
+    bool m_showFileBrowser = false;
     std::string m_errorDialogMessage;
+    std::string m_confirmationDialogMessage;
+    std::string m_progressDialogTitle;
+    std::string m_progressDialogMessage;
+    float m_progressDialogValue = 0.0f;
+    std::function<void()> m_confirmationCallback;
+    std::function<void()> m_confirmationCancelCallback;
 
     // Dialog input buffers
     char m_newProjectNameBuffer[256] = "";
     char m_newProjectPathBuffer[512] = "";
     char m_openFilePathBuffer[512] = "";
+
+    // File browser state
+    enum class FileBrowserMode { OpenFile, OpenFolder, SaveFile };
+    FileBrowserMode m_fileBrowserMode = FileBrowserMode::OpenFolder;
+    std::string m_fileBrowserCurrentPath;
+    std::string m_fileBrowserSelectedPath;
+    std::function<void(const std::string&)> m_fileBrowserCallback;
+    std::vector<std::string> m_fileBrowserEntries;
+    bool m_fileBrowserNeedsRefresh = true;
+
+    // Recent projects
+    std::vector<std::string> m_recentProjects;
+
+    // Project templates
+    int m_selectedTemplate = 0;
 };
 
 } // namespace NovelMind::editor

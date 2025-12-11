@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <chrono>
 #include <filesystem>
+#include <fstream>
 
 // Include ImGui for menu rendering
 #if defined(NOVELMIND_HAS_SDL2) && defined(NOVELMIND_HAS_IMGUI)
@@ -1562,6 +1563,9 @@ Result<void> EditorApp::initialize(const EditorConfig& config)
     // Load configuration
     loadConfig();
 
+    // Load recent projects
+    loadRecentProjects();
+
     return Result<void>::ok();
 }
 
@@ -1882,7 +1886,10 @@ void EditorApp::paste()
 
 void EditorApp::deleteSelection()
 {
-    m_inspectorAPI->deleteSelection();
+    showConfirmation("Are you sure you want to delete the selected items?",
+        [this]() {
+            m_inspectorAPI->deleteSelection();
+        });
 }
 
 void EditorApp::selectAll()
@@ -2180,6 +2187,9 @@ void EditorApp::render()
     renderOpenSceneDialog();
     renderAboutDialogContent();
     renderErrorDialog();
+    renderConfirmationDialog();
+    renderProgressDialog();
+    renderFileBrowserDialog();
 }
 
 void EditorApp::handleFileDropped(const std::string& path)
@@ -2366,7 +2376,7 @@ void EditorApp::renderNewProjectDialog()
 
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-    ImGui::SetNextWindowSize(ImVec2(500, 200), ImGuiCond_Appearing);
+    ImGui::SetNextWindowSize(ImVec2(600, 350), ImGuiCond_Appearing);
 
     if (ImGui::BeginPopupModal("New Project", &m_showNewProjectDialog, ImGuiWindowFlags_AlwaysAutoResize))
     {
@@ -2374,19 +2384,60 @@ void EditorApp::renderNewProjectDialog()
         ImGui::Separator();
         ImGui::Spacing();
 
-        ImGui::Text("Project Name:");
+        // Project template selection
+        ImGui::Text("Template:");
         ImGui::SameLine();
+        auto templates = getProjectTemplates();
+        if (ImGui::BeginCombo("##template", templates[static_cast<size_t>(m_selectedTemplate)].c_str()))
+        {
+            for (size_t i = 0; i < templates.size(); ++i)
+            {
+                bool isSelected = (m_selectedTemplate == static_cast<int>(i));
+                if (ImGui::Selectable(templates[i].c_str(), isSelected))
+                {
+                    m_selectedTemplate = static_cast<int>(i);
+                }
+                if (isSelected)
+                {
+                    ImGui::SetItemDefaultFocus();
+                }
+            }
+            ImGui::EndCombo();
+        }
+
+        ImGui::Spacing();
+
+        // Template description
+        ImGui::TextWrapped("Template Info: %s",
+            m_selectedTemplate == 0 ? "Start with a blank project structure." :
+            m_selectedTemplate == 1 ? "Visual novel with character dialogue and branching story." :
+            m_selectedTemplate == 2 ? "Dating simulator with relationship mechanics." :
+            m_selectedTemplate == 3 ? "Adventure game with inventory and puzzles." :
+            "Interactive storytelling with choices and consequences.");
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        ImGui::Text("Project Name:");
+        ImGui::SetNextItemWidth(-1);
         ImGui::InputText("##projectname", m_newProjectNameBuffer, sizeof(m_newProjectNameBuffer));
 
+        ImGui::Spacing();
+
         ImGui::Text("Project Path:");
-        ImGui::SameLine();
+        ImGui::SetNextItemWidth(-150);
         ImGui::InputText("##projectpath", m_newProjectPathBuffer, sizeof(m_newProjectPathBuffer));
         ImGui::SameLine();
-        if (ImGui::Button("Browse..."))
+        if (ImGui::Button("Browse...", ImVec2(140, 0)))
         {
-            // TODO: Open file browser dialog
-            // For now, show a message
-            showError("File browser not yet implemented. Please enter path manually.");
+            m_fileBrowserMode = FileBrowserMode::OpenFolder;
+            m_fileBrowserCallback = [this](const std::string& path) {
+                strncpy(m_newProjectPathBuffer, path.c_str(), sizeof(m_newProjectPathBuffer) - 1);
+                m_newProjectPathBuffer[sizeof(m_newProjectPathBuffer) - 1] = '\0';
+            };
+            m_fileBrowserNeedsRefresh = true;
+            m_showFileBrowser = true;
         }
 
         ImGui::Spacing();
@@ -2408,17 +2459,25 @@ void EditorApp::renderNewProjectDialog()
             }
             else
             {
+                // Show progress during project creation
+                showProgress("Creating Project", "Setting up project structure...", 0.5f);
+
                 auto result = newProject(path, name);
+
+                hideProgress();
+
                 if (!result.isOk())
                 {
                     showError("Failed to create project: " + result.error());
                 }
                 else
                 {
+                    addToRecentProjects(path + "/" + name);
                     m_showNewProjectDialog = false;
                     // Clear buffers
                     m_newProjectNameBuffer[0] = '\0';
                     m_newProjectPathBuffer[0] = '\0';
+                    m_selectedTemplate = 0;
                 }
             }
         }
@@ -2426,6 +2485,7 @@ void EditorApp::renderNewProjectDialog()
         if (ImGui::Button("Cancel", ImVec2(120, 0)))
         {
             m_showNewProjectDialog = false;
+            m_selectedTemplate = 0;
         }
 
         ImGui::EndPopup();
@@ -2442,22 +2502,65 @@ void EditorApp::renderOpenProjectDialog()
 
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-    ImGui::SetNextWindowSize(ImVec2(500, 150), ImGuiCond_Appearing);
+    ImGui::SetNextWindowSize(ImVec2(600, 400), ImGuiCond_Appearing);
 
-    if (ImGui::BeginPopupModal("Open Project", &m_showOpenProjectDialog, ImGuiWindowFlags_AlwaysAutoResize))
+    if (ImGui::BeginPopupModal("Open Project", &m_showOpenProjectDialog, ImGuiWindowFlags_None))
     {
         ImGui::Text("Open an existing NovelMind project");
         ImGui::Separator();
         ImGui::Spacing();
 
+        // Recent projects list
+        if (!m_recentProjects.empty())
+        {
+            ImGui::Text("Recent Projects:");
+            ImGui::BeginChild("RecentProjects", ImVec2(0, 150), true);
+            for (const auto& recentPath : m_recentProjects)
+            {
+                fs::path p(recentPath);
+                std::string displayName = p.filename().string() + " - " + recentPath;
+
+                if (ImGui::Selectable(displayName.c_str()))
+                {
+                    strncpy(m_openFilePathBuffer, recentPath.c_str(), sizeof(m_openFilePathBuffer) - 1);
+                    m_openFilePathBuffer[sizeof(m_openFilePathBuffer) - 1] = '\0';
+                }
+
+                if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+                {
+                    // Double-click to open directly
+                    auto result = openProject(recentPath);
+                    if (!result.isOk())
+                    {
+                        showError("Failed to open project: " + result.error());
+                    }
+                    else
+                    {
+                        addToRecentProjects(recentPath);
+                        m_showOpenProjectDialog = false;
+                        m_openFilePathBuffer[0] = '\0';
+                    }
+                }
+            }
+            ImGui::EndChild();
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+        }
+
         ImGui::Text("Project Path:");
-        ImGui::SameLine();
+        ImGui::SetNextItemWidth(-150);
         ImGui::InputText("##openprojectpath", m_openFilePathBuffer, sizeof(m_openFilePathBuffer));
         ImGui::SameLine();
-        if (ImGui::Button("Browse..."))
+        if (ImGui::Button("Browse...", ImVec2(140, 0)))
         {
-            // TODO: Open file browser dialog
-            showError("File browser not yet implemented. Please enter path manually.");
+            m_fileBrowserMode = FileBrowserMode::OpenFolder;
+            m_fileBrowserCallback = [this](const std::string& path) {
+                strncpy(m_openFilePathBuffer, path.c_str(), sizeof(m_openFilePathBuffer) - 1);
+                m_openFilePathBuffer[sizeof(m_openFilePathBuffer) - 1] = '\0';
+            };
+            m_fileBrowserNeedsRefresh = true;
+            m_showFileBrowser = true;
         }
 
         ImGui::Spacing();
@@ -2474,13 +2577,19 @@ void EditorApp::renderOpenProjectDialog()
             }
             else
             {
+                showProgress("Opening Project", "Loading project data...", 0.5f);
+
                 auto result = openProject(path);
+
+                hideProgress();
+
                 if (!result.isOk())
                 {
                     showError("Failed to open project: " + result.error());
                 }
                 else
                 {
+                    addToRecentProjects(path);
                     m_showOpenProjectDialog = false;
                     m_openFilePathBuffer[0] = '\0';
                 }
@@ -2506,7 +2615,7 @@ void EditorApp::renderOpenSceneDialog()
 
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-    ImGui::SetNextWindowSize(ImVec2(500, 150), ImGuiCond_Appearing);
+    ImGui::SetNextWindowSize(ImVec2(600, 200), ImGuiCond_Appearing);
 
     if (ImGui::BeginPopupModal("Open Scene", &m_showOpenSceneDialog, ImGuiWindowFlags_AlwaysAutoResize))
     {
@@ -2515,13 +2624,18 @@ void EditorApp::renderOpenSceneDialog()
         ImGui::Spacing();
 
         ImGui::Text("Scene Path:");
-        ImGui::SameLine();
+        ImGui::SetNextItemWidth(-150);
         ImGui::InputText("##openscenepath", m_openFilePathBuffer, sizeof(m_openFilePathBuffer));
         ImGui::SameLine();
-        if (ImGui::Button("Browse..."))
+        if (ImGui::Button("Browse...", ImVec2(140, 0)))
         {
-            // TODO: Open file browser dialog
-            showError("File browser not yet implemented. Please enter path manually.");
+            m_fileBrowserMode = FileBrowserMode::OpenFile;
+            m_fileBrowserCallback = [this](const std::string& path) {
+                strncpy(m_openFilePathBuffer, path.c_str(), sizeof(m_openFilePathBuffer) - 1);
+                m_openFilePathBuffer[sizeof(m_openFilePathBuffer) - 1] = '\0';
+            };
+            m_fileBrowserNeedsRefresh = true;
+            m_showFileBrowser = true;
         }
 
         ImGui::Spacing();
@@ -2642,6 +2756,323 @@ void EditorApp::showError(const std::string& message)
     m_errorDialogMessage = message;
     m_showErrorDialog = true;
     NovelMind::core::Logger::instance().error(message);
+}
+
+void EditorApp::showConfirmation(const std::string& message, std::function<void()> onConfirm, std::function<void()> onCancel)
+{
+    m_confirmationDialogMessage = message;
+    m_confirmationCallback = onConfirm;
+    m_confirmationCancelCallback = onCancel;
+    m_showConfirmationDialog = true;
+}
+
+void EditorApp::showProgress(const std::string& title, const std::string& message, float progress)
+{
+    m_progressDialogTitle = title;
+    m_progressDialogMessage = message;
+    m_progressDialogValue = progress;
+    m_showProgressDialog = true;
+}
+
+void EditorApp::hideProgress()
+{
+    m_showProgressDialog = false;
+}
+
+void EditorApp::renderConfirmationDialog()
+{
+#if defined(NOVELMIND_HAS_SDL2) && defined(NOVELMIND_HAS_IMGUI)
+    if (!m_showConfirmationDialog) return;
+
+    ImGui::OpenPopup("Confirmation");
+
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+    if (ImGui::BeginPopupModal("Confirmation", &m_showConfirmationDialog, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::TextWrapped("%s", m_confirmationDialogMessage.c_str());
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        if (ImGui::Button("Yes", ImVec2(120, 0)))
+        {
+            if (m_confirmationCallback)
+            {
+                m_confirmationCallback();
+            }
+            m_showConfirmationDialog = false;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("No", ImVec2(120, 0)))
+        {
+            if (m_confirmationCancelCallback)
+            {
+                m_confirmationCancelCallback();
+            }
+            m_showConfirmationDialog = false;
+        }
+
+        ImGui::EndPopup();
+    }
+#endif
+}
+
+void EditorApp::renderProgressDialog()
+{
+#if defined(NOVELMIND_HAS_SDL2) && defined(NOVELMIND_HAS_IMGUI)
+    if (!m_showProgressDialog) return;
+
+    ImGui::OpenPopup(m_progressDialogTitle.c_str());
+
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    ImGui::SetNextWindowSize(ImVec2(400, 150), ImGuiCond_Appearing);
+
+    if (ImGui::BeginPopupModal(m_progressDialogTitle.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+    {
+        ImGui::TextWrapped("%s", m_progressDialogMessage.c_str());
+        ImGui::Spacing();
+        ImGui::ProgressBar(m_progressDialogValue, ImVec2(-1.0f, 0.0f));
+        ImGui::Spacing();
+
+        ImGui::EndPopup();
+    }
+#endif
+}
+
+void EditorApp::renderFileBrowserDialog()
+{
+#if defined(NOVELMIND_HAS_SDL2) && defined(NOVELMIND_HAS_IMGUI)
+    if (!m_showFileBrowser) return;
+
+    const char* title = "Select Path";
+    switch (m_fileBrowserMode)
+    {
+        case FileBrowserMode::OpenFile:
+            title = "Open File";
+            break;
+        case FileBrowserMode::OpenFolder:
+            title = "Select Folder";
+            break;
+        case FileBrowserMode::SaveFile:
+            title = "Save File";
+            break;
+    }
+
+    ImGui::OpenPopup(title);
+
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    ImGui::SetNextWindowSize(ImVec2(600, 400), ImGuiCond_Appearing);
+
+    if (ImGui::BeginPopupModal(title, &m_showFileBrowser, ImGuiWindowFlags_None))
+    {
+        // Initialize current path if needed
+        if (m_fileBrowserCurrentPath.empty() || m_fileBrowserNeedsRefresh)
+        {
+            if (m_fileBrowserCurrentPath.empty())
+            {
+                m_fileBrowserCurrentPath = fs::current_path().string();
+            }
+
+            // Refresh directory entries
+            m_fileBrowserEntries.clear();
+            try
+            {
+                if (fs::exists(m_fileBrowserCurrentPath) && fs::is_directory(m_fileBrowserCurrentPath))
+                {
+                    // Add parent directory entry
+                    m_fileBrowserEntries.push_back("..");
+
+                    for (const auto& entry : fs::directory_iterator(m_fileBrowserCurrentPath))
+                    {
+                        m_fileBrowserEntries.push_back(entry.path().filename().string());
+                    }
+
+                    // Sort: directories first, then files
+                    std::sort(m_fileBrowserEntries.begin() + 1, m_fileBrowserEntries.end(),
+                        [this](const std::string& a, const std::string& b) {
+                            fs::path pathA = fs::path(m_fileBrowserCurrentPath) / a;
+                            fs::path pathB = fs::path(m_fileBrowserCurrentPath) / b;
+                            bool isDirA = fs::is_directory(pathA);
+                            bool isDirB = fs::is_directory(pathB);
+                            if (isDirA != isDirB) return isDirA;
+                            return a < b;
+                        });
+                }
+            }
+            catch (const std::exception& e)
+            {
+                NovelMind::core::Logger::instance().error("Failed to read directory: " + std::string(e.what()));
+            }
+            m_fileBrowserNeedsRefresh = false;
+        }
+
+        // Display current path
+        ImGui::Text("Current Path:");
+        ImGui::SameLine();
+        ImGui::TextWrapped("%s", m_fileBrowserCurrentPath.c_str());
+        ImGui::Separator();
+
+        // File/folder list
+        ImGui::BeginChild("FileList", ImVec2(0, 300), true);
+        for (const auto& entry : m_fileBrowserEntries)
+        {
+            fs::path fullPath = fs::path(m_fileBrowserCurrentPath) / entry;
+            bool isDir = entry == ".." || (fs::exists(fullPath) && fs::is_directory(fullPath));
+
+            std::string displayName = entry;
+            if (isDir && entry != "..")
+            {
+                displayName = "[" + entry + "]";
+            }
+
+            if (ImGui::Selectable(displayName.c_str(), m_fileBrowserSelectedPath == entry))
+            {
+                m_fileBrowserSelectedPath = entry;
+
+                // Double-click or clicking on .. to navigate
+                if (isDir)
+                {
+                    if (entry == "..")
+                    {
+                        m_fileBrowserCurrentPath = fs::path(m_fileBrowserCurrentPath).parent_path().string();
+                    }
+                    else
+                    {
+                        m_fileBrowserCurrentPath = fullPath.string();
+                    }
+                    m_fileBrowserNeedsRefresh = true;
+                    m_fileBrowserSelectedPath.clear();
+                }
+            }
+
+            // Double-click to enter directory
+            if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0) && isDir && entry != "..")
+            {
+                m_fileBrowserCurrentPath = fullPath.string();
+                m_fileBrowserNeedsRefresh = true;
+                m_fileBrowserSelectedPath.clear();
+            }
+        }
+        ImGui::EndChild();
+
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        // Buttons
+        if (ImGui::Button("Select", ImVec2(120, 0)))
+        {
+            std::string selectedPath;
+            if (m_fileBrowserMode == FileBrowserMode::OpenFolder)
+            {
+                selectedPath = m_fileBrowserCurrentPath;
+            }
+            else if (!m_fileBrowserSelectedPath.empty())
+            {
+                selectedPath = (fs::path(m_fileBrowserCurrentPath) / m_fileBrowserSelectedPath).string();
+            }
+
+            if (!selectedPath.empty() && m_fileBrowserCallback)
+            {
+                m_fileBrowserCallback(selectedPath);
+            }
+            m_showFileBrowser = false;
+            m_fileBrowserSelectedPath.clear();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel", ImVec2(120, 0)))
+        {
+            m_showFileBrowser = false;
+            m_fileBrowserSelectedPath.clear();
+        }
+
+        ImGui::EndPopup();
+    }
+#endif
+}
+
+void EditorApp::loadRecentProjects()
+{
+    m_recentProjects.clear();
+
+    // Try to load from config file
+    fs::path configPath = fs::path(m_config.lastProjectPath).parent_path() / ".novelmind" / "recent_projects.txt";
+
+    if (fs::exists(configPath))
+    {
+        try
+        {
+            std::ifstream file(configPath);
+            std::string line;
+            while (std::getline(file, line) && m_recentProjects.size() < 10)
+            {
+                if (!line.empty() && fs::exists(line))
+                {
+                    m_recentProjects.push_back(line);
+                }
+            }
+        }
+        catch (const std::exception& e)
+        {
+            NovelMind::core::Logger::instance().error("Failed to load recent projects: " + std::string(e.what()));
+        }
+    }
+}
+
+void EditorApp::saveRecentProjects()
+{
+    try
+    {
+        fs::path configDir = fs::path(m_config.lastProjectPath).parent_path() / ".novelmind";
+        fs::create_directories(configDir);
+
+        fs::path configPath = configDir / "recent_projects.txt";
+        std::ofstream file(configPath);
+
+        for (const auto& project : m_recentProjects)
+        {
+            file << project << "\n";
+        }
+    }
+    catch (const std::exception& e)
+    {
+        NovelMind::core::Logger::instance().error("Failed to save recent projects: " + std::string(e.what()));
+    }
+}
+
+void EditorApp::addToRecentProjects(const std::string& path)
+{
+    // Remove if already exists
+    auto it = std::find(m_recentProjects.begin(), m_recentProjects.end(), path);
+    if (it != m_recentProjects.end())
+    {
+        m_recentProjects.erase(it);
+    }
+
+    // Add to front
+    m_recentProjects.insert(m_recentProjects.begin(), path);
+
+    // Keep only 10 most recent
+    if (m_recentProjects.size() > 10)
+    {
+        m_recentProjects.resize(10);
+    }
+
+    saveRecentProjects();
+}
+
+std::vector<std::string> EditorApp::getProjectTemplates() const
+{
+    return {
+        "Empty Project",
+        "Visual Novel Template",
+        "Dating Sim Template",
+        "Adventure Game Template",
+        "Interactive Story Template"
+    };
 }
 
 } // namespace NovelMind::editor
