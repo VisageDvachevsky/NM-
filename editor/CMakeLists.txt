@@ -33,6 +33,13 @@ add_library(novelmind_editor STATIC
     src/console_panel.cpp
     src/build_settings_panel.cpp
     src/play_mode_controller.cpp
+
+    # v0.2.0 Additional GUI panels
+    src/curve_editor_panel.cpp
+    src/voice_manager_panel.cpp
+    src/localization_panel.cpp
+    src/debug_overlay_panel.cpp
+    src/hotkeys_manager.cpp
 )
 
 # Alias for backward compatibility
