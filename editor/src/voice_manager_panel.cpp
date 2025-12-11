@@ -140,7 +140,7 @@ void VoiceManagerPanel::renderFilterBar()
     }
     if (widgets::Dropdown("Character", &m_selectedCharacterIndex, characterOptions)) {
         m_filter.characterFilter = m_selectedCharacterIndex > 0 ?
-            characterOptions[m_selectedCharacterIndex] : "";
+            characterOptions[static_cast<size_t>(m_selectedCharacterIndex)] : "";
         m_filterDirty = true;
     }
 
@@ -152,7 +152,7 @@ void VoiceManagerPanel::renderFilterBar()
     }
     if (widgets::Dropdown("Scene", &m_selectedSceneIndex, sceneOptions)) {
         m_filter.sceneFilter = m_selectedSceneIndex > 0 ?
-            sceneOptions[m_selectedSceneIndex] : "";
+            sceneOptions[static_cast<size_t>(m_selectedSceneIndex)] : "";
         m_filterDirty = true;
     }
 
@@ -210,6 +210,7 @@ void VoiceManagerPanel::renderTableHeader()
 
         // Header button/text
         bool isCurrentSort = (m_sortState.column == col.type);
+        (void)isCurrentSort; // Reserved for UI rendering
 
         // Would render sortable column header
         // On click, toggle sort
@@ -219,9 +220,11 @@ void VoiceManagerPanel::renderTableHeader()
 void VoiceManagerPanel::renderTableRow(const DialogueLine* line, size_t rowIndex)
 {
     if (!line) return;
+    (void)rowIndex; // Reserved for row UI rendering
 
     bool isSelected = std::find(m_selectedLines.begin(), m_selectedLines.end(), line->id)
                       != m_selectedLines.end();
+    (void)isSelected; // Reserved for row selection highlighting
 
     bool isPreviewingThis = (m_previewingLineId == line->id);
 
@@ -291,7 +294,9 @@ void VoiceManagerPanel::renderTableRow(const DialogueLine* line, size_t rowIndex
 void VoiceManagerPanel::renderStatusBadge(VoiceBindingStatus status)
 {
     renderer::Color color = getStatusColor(status);
+    (void)color; // Reserved for badge rendering
     const char* text = getStatusText(status);
+    (void)text; // Reserved for badge text rendering
 
     // Render colored badge with text
     // Background pill shape with text
@@ -585,7 +590,7 @@ std::vector<MenuItem> VoiceManagerPanel::getMenuItems() const
         }},
         MenuItem::separator(),
         {"Configure Patterns...", "", [this]() {
-            const_cast<VoiceManagerPanel*>(this)->m_showPatternConfig = true; }}
+            const_cast<VoiceManagerPanel*>(this)->m_showPatternConfig = true; }, nullptr, {}}
     };
 }
 
@@ -622,7 +627,7 @@ std::vector<MenuItem> VoiceManagerPanel::getContextMenuItems() const
             auto* line = m_voiceManager->getLine(m_selectedLines[0]);
             return line && !line->voiceFile.empty() &&
                    line->status != VoiceBindingStatus::MissingFile;
-        }});
+        }, {}});
 
         items.push_back({"Unbind Voice", "", [this]() {
             const_cast<VoiceManagerPanel*>(this)->unbindSelectedVoices();
@@ -630,13 +635,13 @@ std::vector<MenuItem> VoiceManagerPanel::getContextMenuItems() const
             if (m_selectedLines.empty() || !m_voiceManager) return false;
             auto* line = m_voiceManager->getLine(m_selectedLines[0]);
             return line && line->status != VoiceBindingStatus::Unbound;
-        }});
+        }, {}});
 
         items.push_back(MenuItem::separator());
 
         items.push_back({"Go to Source Node", "", [this]() {
             const_cast<VoiceManagerPanel*>(this)->navigateToSource();
-        }});
+        }, nullptr, {}});
     }
 
     return items;
