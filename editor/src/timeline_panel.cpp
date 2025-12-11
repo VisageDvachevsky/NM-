@@ -1361,12 +1361,12 @@ void TimelinePanel::handleKeyboardInput()
 f32 TimelinePanel::timeToPixel(f64 time) const
 {
     f64 normalizedTime = (time - m_viewStartTime) / (m_viewEndTime - m_viewStartTime);
-    return static_cast<f32>(normalizedTime * (m_contentWidth - m_headerWidth));
+    return static_cast<f32>(normalizedTime * static_cast<f64>(m_contentWidth - m_headerWidth));
 }
 
 f64 TimelinePanel::pixelToTime(f32 pixel) const
 {
-    f64 normalizedX = static_cast<f64>(pixel) / (m_contentWidth - m_headerWidth);
+    f64 normalizedX = static_cast<f64>(pixel) / static_cast<f64>(m_contentWidth - m_headerWidth);
     return m_viewStartTime + normalizedX * (m_viewEndTime - m_viewStartTime);
 }
 
@@ -1461,7 +1461,7 @@ f32 TimelinePanel::interpolateKeyframes(const Keyframe& k1, const Keyframe& k2, 
             break;
     }
 
-    return static_cast<f32>(k1.value + (k2.value - k1.value) * t);
+    return static_cast<f32>(static_cast<f64>(k1.value) + static_cast<f64>(k2.value - k1.value) * t);
 }
 
 } // namespace NovelMind::editor
